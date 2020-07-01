@@ -13,7 +13,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
     '''Commands for opendata.swiss
     Usage:
         # General usage
-        paster --plugin=ckanext-ogdchcommands ogdch <command> -c <path to config file>
+        paster --plugin=ckanext-ogdchcommands ogdch <command> -c <path to config file> # noqa
 
         # Show this help
         paster ogdch help

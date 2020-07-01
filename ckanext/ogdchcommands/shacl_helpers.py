@@ -13,7 +13,7 @@ def get_shacl_command_from_config():
 
 
 def get_shacl_resultsdir_from_config():
-    shacl_results_dir = tk.config.get('ckanext.ogdchcommands.shacl_results_dir')
+    shacl_results_dir = tk.config.get('ckanext.ogdchcommands.shacl_results_dir') # noqa
     if not shacl_results_dir:
         raise CkanConfigurationException(
             """'ckanext.ogdchcommands.shacl_results_dir'
@@ -22,7 +22,7 @@ def get_shacl_resultsdir_from_config():
 
 
 def get_shacl_shapesdir_from_config():
-    shacl_shapesdir = tk.config.get('ckanext.ogdchcommands.shacl_shapes_dir')
+    shacl_shapesdir = tk.config.get('ckanext.ogdchcommands.shacl_shapes_dir') # noqa
     if not shacl_shapesdir:
         raise CkanConfigurationException(
             """'ckanext.ogdchcommands.shacl_shapes_dir'
