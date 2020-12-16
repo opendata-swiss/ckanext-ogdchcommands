@@ -25,10 +25,10 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         # - deletes all the harvest jobs and objects except the latest n
         # - the default number of jobs to keep is 10
         # - the command can be performed with a dryrun option where the
-        #   database will remain unchainged
-
+        #   database will remain unchanged
         paster ogdch cleanup_harvestjobs
             [{source_id}] [--keep={n}}] [--dryrun}]
+
         # Shacl validate harvest source
         # - validates a harvest source against a shacl shape file
         # - output a csv file of shacl shape validation errors
@@ -39,7 +39,6 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         # - the results are written in the shaclresults directory
         # - both of these directories are specified in the ckan
         #   configuration file
-
         paster ogdch shacl_validate
             {source_id} --shapefile={name of the shape file}
     '''
