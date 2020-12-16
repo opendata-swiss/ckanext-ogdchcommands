@@ -32,6 +32,12 @@ database before the actual database changes are performed.
 paster --plugin=ckanext-ogdchcommands ogdch cleanup_harvestjobs [{source_id}] [--keep={n}}] [--dryrun] -c /var/www/ckan/development.ini
 ```
 
+## Command to publish private datasets that have a scheduled-date.
+This command will look for private datasets that have the `scheduled`-field set and will publish it if it is due.
+```bash
+paster --plugin=ckanext-ogdchcommands ogdch publish_scheduled_datasets [--dryrun] -c /var/www/ckan/development.ini
+```
+
 ## Command for Shacl Validation
 The Swiss Dcat Harvester offers a validation where the data is tested against a shacl shape graph.
 - the validation currently uses https://jena.apache.org/documentation/shacl/index.html
