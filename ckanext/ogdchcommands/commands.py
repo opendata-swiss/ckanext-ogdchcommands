@@ -54,7 +54,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         self.parser.add_option(
             '--dryrun', action="store_true", dest='dryrun',
             default=False,
-            help='dryrun of cleanup harvestjobs')
+            help='dryrun of cleanup harvestjobs and publish_scheduled_datasets')
         self.parser.add_option(
             '--shapefile', action="store", type="string",  dest='shapefile',
             default='ech-0200.shacl.ttl',
