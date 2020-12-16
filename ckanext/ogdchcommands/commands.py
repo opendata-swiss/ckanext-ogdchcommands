@@ -73,7 +73,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         try:
             cmd = self.args[0]
             options[cmd](*self.args[1:])
-        except KeyError:
+        except (KeyError, IndexError):
             self.help()
             sys.exit(1)
 
