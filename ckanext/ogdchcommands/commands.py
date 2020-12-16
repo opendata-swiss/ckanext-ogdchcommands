@@ -6,6 +6,8 @@ import ckan.lib.cli
 import ckan.logic as logic
 import ckan.model as model
 import pandas as pd
+from datetime import datetime
+import time
 import ckanext.ogdchcommands.shacl_helpers as sh
 
 
@@ -41,6 +43,12 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         #   configuration file
         paster ogdch shacl_validate
             {source_id} --shapefile={name of the shape file}
+
+        # Publish scheduled datasets
+        # checks for private datasets that have a scheduled date
+        # that is either today or in the past and sets them to public
+        paster ogdch publish_scheduled_datasets [--dryrun}]
+
     '''
     summary = __doc__.split('\n')[0]
     usage = __doc__
@@ -68,6 +76,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             'help': self.help,
             'cleanup_harvestjobs': self.cleanup_harvestjobs,
             'shacl_validate': self.shacl_validate,
+            'publish_scheduled_datasets': self.publish_scheduled_datasets,
         }
 
         try:
@@ -79,6 +88,70 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
 
     def help(self):
         print(self.__doc__)
+
+    def publish_scheduled_datasets(self):
+        """
+        command to publish scheduled datasets
+        """
+
+        user = logic.get_action('get_site_user')({'ignore_auth': True}, {})
+        context = {
+            'model': model,
+            'session': model.Session,
+            'user': user['name']
+        }
+        try:
+            logic.check_access('package_patch', context)
+        except logic.NotAuthorized:
+            print("User is not authorized to perform this action.")
+            sys.exit(1)
+
+        query = logic.get_action('package_search')(
+            context,
+            {
+                'q': '*:*',
+                'fq': '+capacity:private +scheduled:[* TO *]',
+                'include_private': True,
+             }
+        )
+        private_datasets = query['results']
+        log_output = """Private datasets that are due to be published: \n\n"""
+        for dataset in private_datasets:
+            data_dict = self._is_dataset_ready_to_be_published(context, dataset)
+            if data_dict:
+                log_output += 'Private dataset: "%s" (%s) ... ' % (
+                    data_dict.get('name'),
+                    data_dict.get('scheduled')
+                )
+                if not self.options.dryrun:
+                    data_dict['private'] = False
+                    logic.get_action('package_patch')(context, data_dict)
+                    log_output += "has been published.\n"
+                else:
+                    log_output += "is due to be published.\n"
+
+        print(log_output)
+
+        if self.options.dryrun:
+            print('\nThis has been a dry run: '
+                  'if you want to perfom these changes'
+                  ' run this again without the option --dryrun!')
+        else:
+            print('\nPrivate datasets that are due have been published. '
+                  'See output above about what has been done.')
+
+    @staticmethod
+    def _is_dataset_ready_to_be_published(context, dataset):
+        issued_datetime = datetime.strptime(
+            dataset.get('scheduled'),
+            '%d.%m.%Y'
+        )
+        if issued_datetime.date() <= datetime.today().date():
+            return logic.get_action('package_show')(context, {
+                'id': dataset.get('id')
+            })
+        else:
+            return None
 
     def cleanup_datastore(self):
         user = logic.get_action('get_site_user')({'ignore_auth': True}, {})
