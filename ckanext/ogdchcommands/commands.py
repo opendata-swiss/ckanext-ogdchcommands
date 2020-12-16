@@ -62,7 +62,8 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         self.parser.add_option(
             '--dryrun', action="store_true", dest='dryrun',
             default=False,
-            help='dryrun of cleanup harvestjobs and publish_scheduled_datasets')
+            help='dryrun of cleanup harvestjobs and '
+                 'publish_scheduled_datasets')
         self.parser.add_option(
             '--shapefile', action="store", type="string",  dest='shapefile',
             default='ech-0200.shacl.ttl',
@@ -117,7 +118,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         private_datasets = query['results']
         log_output = """Private datasets that are due to be published: \n\n"""
         for dataset in private_datasets:
-            data_dict = self._is_dataset_ready_to_be_published(context, dataset)
+            data_dict = self._is_dataset_due_to_be_published(context, dataset)
             if data_dict:
                 log_output += 'Private dataset: "%s" (%s) ... ' % (
                     data_dict.get('name'),
@@ -141,7 +142,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
                   'See output above about what has been done.')
 
     @staticmethod
-    def _is_dataset_ready_to_be_published(context, dataset):
+    def _is_dataset_due_to_be_published(context, dataset):
         issued_datetime = datetime.strptime(
             dataset.get('scheduled'),
             '%d.%m.%Y'
