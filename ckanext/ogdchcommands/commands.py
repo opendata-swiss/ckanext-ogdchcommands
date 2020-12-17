@@ -7,7 +7,6 @@ import ckan.logic as logic
 import ckan.model as model
 import pandas as pd
 from datetime import datetime
-import time
 import ckanext.ogdchcommands.shacl_helpers as sh
 
 
