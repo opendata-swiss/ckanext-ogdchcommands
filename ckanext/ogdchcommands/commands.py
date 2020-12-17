@@ -29,7 +29,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         # - the command can be performed with a dryrun option where the
         #   database will remain unchanged
         paster ogdch cleanup_harvestjobs
-            [{source_id}] [--keep={n}}] [--dryrun}]
+            [{source_id}] [--keep={n}] [--dryrun]
 
         # Shacl validate harvest source
         # - validates a harvest source against a shacl shape file
@@ -47,7 +47,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         # Publish scheduled datasets
         # checks for private datasets that have a scheduled date
         # that is either today or in the past and sets them to public
-        paster ogdch publish_scheduled_datasets [--dryrun}]
+        paster ogdch publish_scheduled_datasets [--dryrun]
 
     '''
     summary = __doc__.split('\n')[0]
