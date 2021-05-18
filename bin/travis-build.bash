@@ -3,6 +3,19 @@ set -e
 
 echo "This is travis-build.bash..."
 
+echo "Updating GPG keys..."
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+curl -L https://packagecloud.io/github/git-lfs/gpgkey | sudo apt-key add -
+wget -qO - https://www.mongodb.org/static/pgp/server-3.2.asc | sudo apt-key add -
+
+echo "Adding archive repository for postgres..."
+sudo rm /etc/apt/sources.list.d/pgdg*
+echo "deb https://apt-archive.postgresql.org/pub/repos/apt trusty-pgdg-archive main" | sudo tee -a /etc/apt/sources.list
+echo "deb-src https://apt-archive.postgresql.org/pub/repos/apt trusty-pgdg-archive main" | sudo tee -a /etc/apt/sources.list
+
+echo "Removing old repository for cassandra..."
+sudo rm /etc/apt/sources.list.d/cassandra*
+
 echo "Installing the packages that CKAN requires..."
 sudo apt-get update -qq
 sudo apt-get install solr-jetty libcommons-fileupload-java
@@ -46,11 +59,18 @@ cd ckan
 paster db init -c test-core.ini
 cd -
 
+# The version of setuptools in CKAN (36.1) falls over when installing
+# dependencies for ckanext-scheming on Travis, specifically ckantoolkit.
+# A newer setuptools version works, possibly because in versions >42,
+# pip is used to install dependencies listed in install_requires in
+# setup.py.
+echo "Upgrading setuptools..."
+pip install --upgrade setuptools
+
 echo "Installing ckanext-scheming and its requirements..."
 git clone https://github.com/ckan/ckanext-scheming
 cd ckanext-scheming
 python setup.py develop
-pip install -r requirements.txt
 cd -
 
 echo "Installing ckanext-fluent and its requirements..."
