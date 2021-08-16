@@ -127,7 +127,7 @@ def ogdch_cleanup_harvestjobs(context, data_dict):
                 'deleted_jobs': delete_jobs,
                 'deleted_nr_objects': len(delete_objects_ids)}
 
-            log.error(
+            log.info(
                 'cleaned resource and shacl result directories {}'
                 .format(source.id))
 
