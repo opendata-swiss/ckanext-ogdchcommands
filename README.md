@@ -21,6 +21,16 @@ It is meant to be run regularly by a cronjob.
 paster --plugin=ckanext-ogdchcommands ogdch cleanup_datastore -c /var/www/ckan/development.ini
 ```
 
+## Command to cleanup the resources.
+When datasets are harvested, we try to reuse the existing resources, but not all of them are 
+reused. Some old resources remain with the state 'deleted'. These orphaned resources can be
+deleted with this command. It is meant to be run regularly by a cronjob. 
+It also comes with a dryrun option.
+
+```bash
+paster --plugin=ckanext-ogdchcommands ogdch cleanup_resources -c /var/www/ckan/development.ini
+```
+
 ## Command to cleanup the harvest jobs.
 This commands deletes the harvest jobs and objects per source and overall leaving only the latest n,
 where n and the source are optional arguments. The command is supposed to be used in a cron job to 
