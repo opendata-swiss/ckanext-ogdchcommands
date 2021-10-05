@@ -10,6 +10,17 @@ from datetime import datetime
 import ckanext.ogdchcommands.shacl_helpers as sh
 
 
+msg_resource_cleanup_dryrun = """Resources cleanup:
+==================
+There are {} resources in status 'deleted'.
+If you want to delete them, run this command
+again without the option --dryrun!"""
+
+msg_resource_cleanup = """Resources cleanup:
+==================
+{} resources in status 'deleted' have been deleted."""
+
+
 class OgdchCommands(ckan.lib.cli.CkanCommand):
     '''Commands for opendata.swiss
     Usage:
@@ -21,6 +32,11 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
 
         # Cleanup datastore
         paster ogdch cleanup_datastore
+
+        # Cleanup resources
+        paster ogdch cleanup_resources
+        # - delete resources that have the state 'deleted'
+        # - also cleans their dependencies in resource_view and resource_revision
 
         # Cleanup harvester jobs and objects:
         # - deletes all the harvest jobs and objects except the latest n
@@ -62,7 +78,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             '--dryrun', action="store_true", dest='dryrun',
             default=False,
             help='dryrun of cleanup harvestjobs and '
-                 'publish_scheduled_datasets')
+                 'publish_scheduled_datasets and cleanup_resources')
         self.parser.add_option(
             '--shapefile', action="store", type="string",  dest='shapefile',
             default='ech-0200.shacl.ttl',
@@ -77,6 +93,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             'cleanup_harvestjobs': self.cleanup_harvestjobs,
             'shacl_validate': self.shacl_validate,
             'publish_scheduled_datasets': self.publish_scheduled_datasets,
+            'cleanup_resources': self.cleanup_resources,
         }
 
         try:
@@ -234,6 +251,32 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         has_next_page = (len(result['records']) > 0)
 
         return (resource_id_list, has_next_page)
+
+    def cleanup_resources(self, source=None):
+        """
+        command for cleaning up orphaned resources and
+        the dependent tables resource_view and resource_revision
+        """
+        user = logic.get_action('get_site_user')({'ignore_auth': True}, {})
+        context = {
+            'model': model,
+            'session': model.Session,
+            'user': user['name']
+        }
+        try:
+            logic.check_access('resource_delete', context)
+        except logic.NotAuthorized:
+            print("User is not authorized to perform this action.")
+            sys.exit(1)
+        result = logic.get_action('ogdch_cleanup_resources')(
+            context,
+            {'dryrun': self.options.dryrun})
+        if self.options.dryrun:
+            print(msg_resource_cleanup_dryrun
+                  .format(result.get('count_deleted')))
+        else:
+            print(msg_resource_cleanup
+                  .format(result.get('count_deleted')))
 
     def cleanup_harvestjobs(self, source=None):
         """

@@ -7,6 +7,7 @@ import rdflib
 from ckan.logic import NotFound, ValidationError
 from ckan.exceptions import CkanConfigurationException
 import ckan.plugins.toolkit as tk
+from ckan import model
 from ckanext.harvest.model import HarvestSource, HarvestJob, HarvestObject
 from ckanext.dcat.processors import RDFParserException
 from ckanext.ogdchcommands.shaclprocessor import (
@@ -235,3 +236,36 @@ def ogdch_shacl_validate(context, data_dict):  # noqa
                     shaclparser.resultdictkey_parseerror: e
                 }
                 writer.writerow(resultdict)
+
+
+def ogdch_cleanup_resources(context, data_dict):
+    """
+    cleans up the database from resources that have been deleted
+    """
+    dryrun = data_dict.get('dryrun')
+    tk.check_access('resource_delete', context, data_dict)
+    delete_resources = model.Session.query(model.Resource) \
+        .filter(model.Resource.state == 'deleted') \
+        .all()
+    delete_resources_ids = [resource.id for resource in delete_resources]
+    count = len(delete_resources_ids)
+
+    sql = '''begin;
+    delete from resource_view
+    where resource_id in ('{delete_id_values}');
+    delete from resource_revision
+    where continuity_id in ('{delete_id_values}');
+    delete from resource
+    where id in ('{delete_id_values}');
+    commit;
+    '''.format(delete_id_values="','".join(delete_resources_ids))
+
+    if not dryrun:
+        model.Session.execute(sql)
+        log.debug("{} resources have been deleted together with their "
+                  "dependencies: resource_revision and resource_view"
+                  .format(count))
+    return {
+        "count_deleted": count,
+        "dryrun": dryrun,
+    }
