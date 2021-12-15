@@ -4,10 +4,11 @@ import csv
 import subprocess
 import rdflib
 
-from ckan.logic import NotFound, ValidationError
+from ckan.logic import NotFound, ValidationError, side_effect_free
 from ckan.exceptions import CkanConfigurationException
 import ckan.plugins.toolkit as tk
 from ckan import model
+from ckan.model import PackageExtra
 from ckanext.harvest.model import HarvestSource, HarvestJob, HarvestObject
 from ckanext.dcat.processors import RDFParserException
 from ckanext.ogdchcommands.shaclprocessor import (
@@ -172,7 +173,7 @@ def ogdch_shacl_validate(context, data_dict):  # noqa
     # parse data from harvest source url
     try:
         data_rdfgraph.parse(harvest_source.url, format=rdf_format)
-    except RDFParserException, e:
+    except RDFParserException as e:
         raise RDFParserException(
             'Error parsing the RDF file during shacl validation: {0}'
             .format(e))
@@ -269,3 +270,31 @@ def ogdch_cleanup_resources(context, data_dict):
         "count_deleted": count,
         "dryrun": dryrun,
     }
+
+
+@side_effect_free
+def migrate_publisher_field(context, data_dict):
+    # get harvest objects for harvest jobs
+    package_extras = \
+        model.Session.query(PackageExtra) \
+            .filter(PackageExtra.key == 'publishers')\
+            .all()
+
+    for record in package_extras:
+        model.Session.create(PackageExtra) \
+            .filter(PackageExtra.key == 'publishers') \
+            .all()
+        log.error(record)
+        log.error(record.value)
+        log.error(type(record.value))
+        log.error(json.loads(record.value))
+        package = tk.get_action('package_show')(
+                    context, {'id': record.package_id})
+
+        log.error(package.get('name'))
+
+    publishers = [{'publishers': record.value} for record in package_extras]
+    output = publishers
+    return output
+
+
