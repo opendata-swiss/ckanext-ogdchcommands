@@ -6,6 +6,12 @@ import ckan.logic as logic
 import ckan.model as model
 from datetime import datetime
 
+from ckan import model
+import ckan.plugins.toolkit as tk
+from ckanext.harvest.model import HarvestSource
+
+import datetime
+
 
 msg_resource_cleanup_dryrun = """Resources cleanup:
 ==================
@@ -60,6 +66,13 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         # that is either today or in the past and sets them to public
         paster ogdch publish_scheduled_datasets [--dryrun]
 
+        # Cleanup harvester sources:
+        # - deletes all datasets, jobs and objects related to a harvest source,
+        #     but keeps the source itself
+        # - the default timeframe to keep harvested datasets of a harvest-source: 30 days
+        paster ogdch cleanup_harvestsources
+            [{source_id}] [--keep_harvestsource={n}]
+
     '''
     summary = __doc__.split('\n')[0]
     usage = __doc__
@@ -75,7 +88,16 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             default=False,
             help='dryrun of cleanup harvestjobs and '
                  'publish_scheduled_datasets and cleanup_resources '
-                 'and cleanup_extras')
+                 'and cleanup_extras'
+                 'publish_scheduled_datasets and cleanup_resources')
+        self.parser.add_option(
+            '--shapefile', action="store", type="string",  dest='shapefile',
+            default='ech-0200.shacl.ttl',
+            help='shape file name for shacl shape validation')
+        self.parser.add_option(
+            '--keep_harvestsource', action="store", type="int", dest='tf_to_keep_harvested_dsets',
+            default=30,
+            help='Initial Timeframe to keep harvested datasets')
 
     def command(self):
         # load pylons config
@@ -87,6 +109,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             'publish_scheduled_datasets': self.publish_scheduled_datasets,
             'cleanup_resources': self.cleanup_resources,
             'cleanup_extras': self.cleanup_extras,
+            'cleanup_harvestsources': self.cleanup_harvestsources,
         }
 
         try:
@@ -396,3 +419,77 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
                           job.id,
                           job.created.strftime('%Y-%m-%d %H:%M:%S'),
                           job.status))
+
+    def cleanup_harvestsources(self, source=None):
+        """
+        command for the harvester job that did not run for > 1 month
+        to cleanup their sources and datasets
+        :argument tf_to_keep_harvested_dsets: int (optional)
+        """
+        # get source from arguments
+        source_id = None
+        data_dict = {}
+        if len(self.args) >= 2:
+            source_id = unicode(self.args[1])
+            data_dict['harvest_source_id'] = source_id
+            print('cleaning up jobs for harvest source {}'.format(source_id))
+        else:
+            print('cleaning up jobs for all harvest sources')
+
+        # get named arguments
+        data_dict['timeframe_to_keep_harvested_datasets'] = self.options.tf_to_keep_harvested_dsets
+
+        # set context
+        context = {'model': model,
+                   'session': model.Session,
+                   'ignore_auth': True}
+        admin_user = logic.get_action('get_site_user')(context, {})
+        context['user'] = admin_user['name']
+
+        # test authorization
+        try:
+            logic.check_access('harvest_sources_clear', context, data_dict)
+            print("User is authorized to perform this action.")
+        except logic.NotAuthorized:
+            print("User is not authorized to perform this action.")
+            sys.exit(1)
+
+        print(data_dict)
+
+        # gets all active harvest sources
+        harvest_sources = model.Session.query(HarvestSource).all()
+        print('Harvest job cleanup called for sources: {},'
+                 'configuration: {}'.format(
+            ', '.join([s.id for s in harvest_sources]),
+            data_dict))
+
+        # get the last day to keep harvested datasets
+        last_day_to_keep_harvested_ds = datetime.datetime.now() - datetime.timedelta(
+            self.options.tf_to_keep_harvested_dsets)
+
+        for source in harvest_sources:
+            print(source)
+            source_dict = tk.get_action('harvest_source_show')(context, {
+                'id': source.id
+            })
+            # check if there are any harvest jobs
+            if not source_dict['status']['last_job']:
+               print('No jobs yet for this harvest source id={}'.format(source.id))
+            else:
+                print("INFO for the last job:")
+                last_job_creation_time = source_dict['status']['last_job']['created']
+                last_job_creation_time_obj = datetime.datetime.strptime(last_job_creation_time, "%Y-%m-%d %H:%M:%S.%f") # don't like this
+                jast_job_id = source_dict['status']['last_job']['id']
+
+                if (last_job_creation_time_obj < last_day_to_keep_harvested_ds):
+                    print('Harvest latest job id={} with creation_time={} is older than {} days'
+                          .format(jast_job_id, last_job_creation_time,
+                                  self.options.tf_to_keep_harvested_dsets))
+                    print('Clears all datasets, jobs and objects related to a harvest source id={}'
+                          .format(jast_job_id))
+                    # tk.get_action("harvest_source_clear")(context, {"id": job.source_id})
+                else:
+                    print('Harvest job id={} with creation_time={} is not older than {} days'
+                          .format(jast_job_id, last_job_creation_time,
+                                  self.options.tf_to_keep_harvested_dsets))
+
