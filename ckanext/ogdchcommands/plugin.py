@@ -27,4 +27,5 @@ class OgdchCommandsPlugin(plugins.SingletonPlugin):
         return {
             'ogdch_cleanup_harvestjobs': l.ogdch_cleanup_harvestjobs,
             'ogdch_cleanup_resources': l.ogdch_cleanup_resources,
+            'cleanup_package_extra': l.cleanup_package_extra,
         }

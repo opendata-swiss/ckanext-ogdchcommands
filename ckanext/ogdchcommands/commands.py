@@ -17,6 +17,14 @@ msg_resource_cleanup = """Resources cleanup:
 ==================
 {} resources in status 'deleted' have been deleted."""
 
+msg_package_extra_cleanup_dryrun = """\npackage extra cleanup for key '{1}':\n\n
+There are {0} package extras with key '{1}'.
+If you want to delete them, run this command
+again without the option --dryrun!\n"""
+
+msg_package_extra_cleanup = """\npackage extra cleanup for key '{1}':\n\n
+{0} package extras with key '{1}' have been deleted.\n"""
+
 
 class OgdchCommands(ckan.lib.cli.CkanCommand):
     '''Commands for opendata.swiss
@@ -34,6 +42,10 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         paster ogdch cleanup_resources
         # - delete resources that have the state 'deleted'
         # - also cleans their dependencies in resource_view and resource_revision
+
+        # Cleanup package_extras
+        paster ogdch cleanup_extras
+        # - delete package extras for a key
 
         # Cleanup harvester jobs and objects:
         # - deletes all the harvest jobs and objects except the latest n
@@ -73,6 +85,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             'cleanup_harvestjobs': self.cleanup_harvestjobs,
             'publish_scheduled_datasets': self.publish_scheduled_datasets,
             'cleanup_resources': self.cleanup_resources,
+            'cleanup_extras': self.cleanup_extras,
         }
 
         try:
@@ -256,6 +269,37 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         else:
             print(msg_resource_cleanup
                   .format(result.get('count_deleted')))
+
+    def cleanup_extras(self, key=None):
+        """
+        command for cleaning up orphaned resources and
+        the dependent tables resource_view and resource_revision
+        """
+        key = self.args[1]
+        if not key:
+            print("Please provide a key for which extras should be cleaned.")
+            sys.exit(1)
+        user = logic.get_action('get_site_user')({'ignore_auth': True}, {})
+        context = {
+            'model': model,
+            'session': model.Session,
+            'user': user['name']
+        }
+        try:
+            logic.check_access('package_delete', context)
+        except logic.NotAuthorized:
+            print("User is not authorized to perform this action.")
+            sys.exit(1)
+        result = logic.get_action('cleanup_package_extra')(
+            context,
+            {'dryrun': self.options.dryrun,
+             'key': key})
+        if self.options.dryrun:
+            print(msg_package_extra_cleanup_dryrun
+                  .format(result.get('count_deleted'), key))
+        else:
+            print(msg_package_extra_cleanup
+                  .format(result.get('count_deleted'), key))
 
     def cleanup_harvestjobs(self, source=None):
         """
