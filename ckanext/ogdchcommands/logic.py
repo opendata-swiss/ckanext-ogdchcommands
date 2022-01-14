@@ -13,6 +13,7 @@ from ckanext.dcat.processors import RDFParserException
 from ckanext.ogdchcommands.shaclprocessor import (
     ShaclParser, SHACLParserException)
 
+import datetime
 import logging
 log = logging.getLogger(__name__)
 
@@ -268,4 +269,48 @@ def ogdch_cleanup_resources(context, data_dict):
     return {
         "count_deleted": count,
         "dryrun": dryrun,
+    }
+
+def ogdch_cleanup_harvestsource(context, data_dict):
+    """
+    Cleaning up jobs for all harvest sources
+    """
+
+    # get the last day to keep harvested datasets
+    tf_to_keep_harvested_dsets = data_dict.get('tf_to_keep_harvested_dsets')
+    last_day_to_keep_harvested_ds = datetime.datetime.now() - datetime.timedelta(tf_to_keep_harvested_dsets)
+
+    # gets all active harvest sources
+    harvest_sources = tk.get_action('harvest_source_list')(context, data_dict)
+    count_cleared_harvestsource = 0
+
+    for source in harvest_sources:
+        source_dict = tk.get_action('harvest_source_show')(context, {
+            'id': source['id']
+        })
+        # check if there are any harvest jobs
+        if not source_dict['status']['last_job']:
+            log.info('No jobs yet for this harvest source id={}'.format(source['id']))
+        else:
+            jast_job_id = source_dict['status']['last_job']['id']
+            last_job_creation_time = source_dict['status']['last_job']['created']
+            last_job_creation_time_obj = datetime.datetime.strptime(last_job_creation_time,
+                                                                    "%Y-%m-%d %H:%M:%S.%f")
+
+            if (last_job_creation_time_obj < last_day_to_keep_harvested_ds):
+                log.info('Harvest latest job id={} with creation_time={} is older than {} days'
+                      .format(jast_job_id, last_job_creation_time,
+                              tf_to_keep_harvested_dsets))
+                log.info('Clears all datasets, jobs and objects related to a harvest source id={}'
+                      .format(jast_job_id))
+                count_cleared_harvestsource += count_cleared_harvestsource
+                tk.get_action("harvest_source_clear")(context, {"id": source['id']})
+            else:
+                log.info('Harvest job id={} with creation_time={} is not older than {} days'
+                      .format(jast_job_id, last_job_creation_time,
+                              tf_to_keep_harvested_dsets))
+
+    return {
+            "count_cleared_harvestsource": count_cleared_harvestsource,
+
     }
