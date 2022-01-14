@@ -178,7 +178,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
                 resource_id_list.extend(record_list)
                 if not has_next_page:
                     break
-        except Exception, e:
+        except Exception as e:
             print(
                 "Error while gathering resources: %s / %s"
                 % (str(e), traceback.format_exc())
@@ -225,7 +225,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
                 print("Resource '%s' *not* found" % record['name'])
             except logic.NotAuthorized:
                 print("User is not authorized to perform this action.")
-            except (KeyError, AttributeError), e:
+            except (KeyError, AttributeError) as e:
                 print("Error while handling record %s: %s" % (record, str(e)))
                 continue
 
@@ -339,7 +339,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
 
     def _print_configuration(self, data_dict):
         for k, v in data_dict.items():
-            print '- {}: {}'.format(k, v)
+            print('- {}: {}'.format(k, v))
 
     def _print_harvest_jobs(self, jobs):
         header_list = ["id", "created", "status"]
