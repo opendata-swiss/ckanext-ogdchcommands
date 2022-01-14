@@ -533,10 +533,14 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         print(data_dict)
 
         # gets all active harvest sources
-        harvest_sources = model.Session.query(HarvestSource).all()
+        #harvest_sources = model.Session.query(HarvestSource).all()
+        print("HERE:::")
+        harvest_sources = tk.get_action('harvest_source_list')(context, data_dict)
+
+        #print(harvest_sources)
         print('Harvest job cleanup called for sources: {},'
                  'configuration: {}'.format(
-            ', '.join([s.id for s in harvest_sources]),
+            ', '.join([s['id'] for s in harvest_sources]),
             data_dict))
 
         # get the last day to keep harvested datasets
@@ -544,13 +548,15 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             self.options.tf_to_keep_harvested_dsets)
 
         for source in harvest_sources:
-            print(source)
+            print("-------------------------")
+            #print(source)
+
             source_dict = tk.get_action('harvest_source_show')(context, {
-                'id': source.id
+                'id': source['id']
             })
             # check if there are any harvest jobs
             if not source_dict['status']['last_job']:
-               print('No jobs yet for this harvest source id={}'.format(source.id))
+               print('No jobs yet for this harvest source id={}'.format(source['id']))
             else:
                 print("INFO for the last job:")
                 last_job_creation_time = source_dict['status']['last_job']['created']
@@ -563,7 +569,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
                                   self.options.tf_to_keep_harvested_dsets))
                     print('Clears all datasets, jobs and objects related to a harvest source id={}'
                           .format(jast_job_id))
-                    # tk.get_action("harvest_source_clear")(context, {"id": job.source_id})
+                    tk.get_action("harvest_source_clear")(context, {"id": source['id']})
                 else:
                     print('Harvest job id={} with creation_time={} is not older than {} days'
                           .format(jast_job_id, last_job_creation_time,
