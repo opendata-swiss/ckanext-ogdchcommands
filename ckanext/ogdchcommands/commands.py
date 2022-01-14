@@ -1,13 +1,10 @@
 import sys
-import os
 import itertools
 import traceback
 import ckan.lib.cli
 import ckan.logic as logic
 import ckan.model as model
-import pandas as pd
 from datetime import datetime
-import ckanext.ogdchcommands.shacl_helpers as sh
 
 
 msg_resource_cleanup_dryrun = """Resources cleanup:

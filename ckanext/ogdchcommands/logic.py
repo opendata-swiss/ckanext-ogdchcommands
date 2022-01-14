@@ -1,17 +1,9 @@
 import itertools
-import json
-import csv
-import subprocess
-import rdflib
 
 from ckan.logic import NotFound, ValidationError
-from ckan.exceptions import CkanConfigurationException
 import ckan.plugins.toolkit as tk
 from ckan import model
 from ckanext.harvest.model import HarvestSource, HarvestJob, HarvestObject
-from ckanext.dcat.processors import RDFParserException
-from ckanext.ogdchcommands.shaclprocessor import (
-    ShaclParser, SHACLParserException)
 
 import logging
 log = logging.getLogger(__name__)
