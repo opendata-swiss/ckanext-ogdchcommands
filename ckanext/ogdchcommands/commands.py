@@ -74,7 +74,8 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             '--dryrun', action="store_true", dest='dryrun',
             default=False,
             help='dryrun of cleanup harvestjobs and '
-                 'publish_scheduled_datasets and cleanup_resources')
+                 'publish_scheduled_datasets and cleanup_resources '
+                 'and cleanup_extras')
 
     def command(self):
         # load pylons config
