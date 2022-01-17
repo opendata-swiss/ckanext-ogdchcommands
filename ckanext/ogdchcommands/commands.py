@@ -44,7 +44,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         # - also cleans their dependencies in resource_view and resource_revision
 
         # Cleanup package_extras
-        paster ogdch cleanup_extras
+        paster ogdch cleanup_extras {key}  [--dryrun]
         # - delete package extras for a key
 
         # Cleanup harvester jobs and objects:
