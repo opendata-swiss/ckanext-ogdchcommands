@@ -272,8 +272,9 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
 
     def cleanup_extras(self, key=None):
         """
-        command for cleaning up orphaned resources and
-        the dependent tables resource_view and resource_revision
+        Command for cleaning up the database after a key (field) has
+        been removed in the dataset schema: all records for this key
+        can then be deleted by running this command for the key.
         """
         key = self.args[1]
         if not key:
