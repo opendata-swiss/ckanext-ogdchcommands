@@ -193,6 +193,7 @@ def cleanup_package_extra(context, data_dict):
         "dryrun": dryrun,
     }
 
+
 def ogdch_cleanup_harvestsource(context, data_dict):
     """
     Cleaning up jobs for all harvest sources

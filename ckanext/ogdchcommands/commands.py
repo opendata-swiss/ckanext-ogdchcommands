@@ -418,7 +418,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
     def clear_stale_harvestsources(self, source=None):
         """
         command that clears all datasets, jobs and objects related to a harvest source
-        that was not active for a given amount of days (default 30 days),
+        that was not active for a given amount of days (default 30 days).
         use --keep_harvestsource_days=n to change timeframe of keeping harvester objects.
         :argument timeframe_to_keep_harvested_datasets
         : int (optional)
