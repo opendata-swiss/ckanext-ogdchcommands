@@ -160,3 +160,34 @@ def ogdch_cleanup_resources(context, data_dict):
         "count_deleted": count,
         "dryrun": dryrun,
     }
+
+
+def cleanup_package_extra(context, data_dict):
+    """
+    cleans up package_extra table for a given key
+    """
+    dryrun = data_dict.get('dryrun')
+    key = data_dict.get('key')
+    tk.check_access('package_delete', context, data_dict)
+    delete_package_extras = model.Session.query(model.PackageExtra) \
+        .filter(model.PackageExtra.key == key) \
+        .all()
+    delete_package_extra_ids = [extra.id for extra in delete_package_extras]
+    count = len(delete_package_extra_ids)
+
+    sql = '''begin;
+    delete from package_extra_revision
+    where continuity_id in ('{delete_id_values}');
+    delete from package_extra
+    where id in  ('{delete_id_values}');
+    commit;
+    '''.format(delete_id_values="','".join(delete_package_extra_ids))
+
+    if not dryrun:
+        model.Session.execute(sql)
+        log.debug("{} package_extras have been deleted"
+                  .format(count))
+    return {
+        "count_deleted": count,
+        "dryrun": dryrun,
+    }

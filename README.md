@@ -31,6 +31,16 @@ It also comes with a dryrun option.
 paster --plugin=ckanext-ogdchcommands ogdch cleanup_resources -c /var/www/ckan/development.ini
 ```
 
+## Command to cleanup the package extra table.
+When a key is no longer needed in the package_extra table, since it is no longer part of the dataset,
+then after the data have been migrated that old key can be removed from the package_extra table 
+and from the dependent table package_extra_revision.
+The command comes with a dryrun option.
+
+```bash
+paster --plugin=ckanext-ogdchcommands ogdch cleanup_extras publishers --dryrun -c /var/www/ckan/development.ini
+```
+
 ## Command to cleanup the harvest jobs.
 This commands deletes the harvest jobs and objects per source and overall leaving only the latest n,
 where n and the source are optional arguments. The command is supposed to be used in a cron job to 
