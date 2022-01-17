@@ -1,13 +1,10 @@
 import sys
-import os
 import itertools
 import traceback
 import ckan.lib.cli
 import ckan.logic as logic
 import ckan.model as model
-import pandas as pd
 from datetime import datetime
-import ckanext.ogdchcommands.shacl_helpers as sh
 
 
 msg_resource_cleanup_dryrun = """Resources cleanup:
@@ -46,19 +43,6 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         paster ogdch cleanup_harvestjobs
             [{source_id}] [--keep={n}] [--dryrun]
 
-        # Shacl validate harvest source
-        # - validates a harvest source against a shacl shape file
-        # - output a csv file of shacl shape validation errors
-        # - the command can be performed with a verbose option where
-        #   also the data and the data results remain, so that it can be
-        #   hand checked if wanted
-        # - the shape file is expected in the shaclshape directory
-        # - the results are written in the shaclresults directory
-        # - both of these directories are specified in the ckan
-        #   configuration file
-        paster ogdch shacl_validate
-            {source_id} --shapefile={name of the shape file}
-
         # Publish scheduled datasets
         # checks for private datasets that have a scheduled date
         # that is either today or in the past and sets them to public
@@ -79,10 +63,6 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             default=False,
             help='dryrun of cleanup harvestjobs and '
                  'publish_scheduled_datasets and cleanup_resources')
-        self.parser.add_option(
-            '--shapefile', action="store", type="string",  dest='shapefile',
-            default='ech-0200.shacl.ttl',
-            help='shape file name for shacl shape validation')
 
     def command(self):
         # load pylons config
@@ -91,7 +71,6 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             'cleanup_datastore': self.cleanup_datastore,
             'help': self.help,
             'cleanup_harvestjobs': self.cleanup_harvestjobs,
-            'shacl_validate': self.shacl_validate,
             'publish_scheduled_datasets': self.publish_scheduled_datasets,
             'cleanup_resources': self.cleanup_resources,
         }
@@ -196,7 +175,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
                 resource_id_list.extend(record_list)
                 if not has_next_page:
                     break
-        except Exception, e:
+        except Exception as e:
             print(
                 "Error while gathering resources: %s / %s"
                 % (str(e), traceback.format_exc())
@@ -243,7 +222,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
                 print("Resource '%s' *not* found" % record['name'])
             except logic.NotAuthorized:
                 print("User is not authorized to perform this action.")
-            except (KeyError, AttributeError), e:
+            except (KeyError, AttributeError) as e:
                 print("Error while handling record %s: %s" % (record, str(e)))
                 continue
 
@@ -357,7 +336,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
 
     def _print_configuration(self, data_dict):
         for k, v in data_dict.items():
-            print '- {}: {}'.format(k, v)
+            print('- {}: {}'.format(k, v))
 
     def _print_harvest_jobs(self, jobs):
         header_list = ["id", "created", "status"]
@@ -371,102 +350,3 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
                           job.id,
                           job.created.strftime('%Y-%m-%d %H:%M:%S'),
                           job.status))
-
-    def shacl_validate(self, source=None):
-        """
-        command for the harvester job cleanup
-        :argument source: string (optional)
-        """
-        # checking arguments
-        data_dict = {}
-        if len(self.args) >= 2:
-            source_id = unicode(self.args[1])
-        else:
-            print('\nCommand Shacl Validation:\n')
-            print('- Aborting: Please provide a harvest source')
-            sys.exit(1)
-
-        if not self.options.shapefile:
-            print('\nCommand Shacl Validation:\n')
-            print('- Aborting: Please provide a shapefile name')
-            sys.exit(1)
-
-        shapedir = sh.get_shacl_shapesdir_from_config()
-        shapefilepath = os.path.join(
-            shapedir, self.options.shapefile)
-        if not os.path.exists(shapefilepath):
-            print('Shacl shape file does not exist in path {}'
-                  .format(shapefilepath))
-            sys.exit(1)
-
-        # loading arguments into config
-        data_dict['harvest_source_id'] = source_id
-        data_dict['shapefile'] = self.options.shapefile
-
-        # setting up other filepathes
-        data_dict['shapefilepath'] = shapefilepath
-        data_dict['resultdir'] = \
-            sh.make_shacl_results_dir(source_id)
-        data_dict['shaclcommand'] = \
-            sh.get_shacl_command_from_config()
-        data_dict['datapath'] = sh.get_shacl_file_path(
-            data_dict['resultdir'], 'data', 'ttl')
-        data_dict['resultpath'] = sh.get_shacl_result_file_path(
-            data_dict['resultdir'], data_dict['shapefile'], 'ttl')
-        data_dict['csvpath'] = sh.get_shacl_result_file_path(
-            data_dict['resultdir'], data_dict['shapefile'], 'csv')
-
-        # set context
-        context = {'model': model,
-                   'session': model.Session,
-                   'ignore_auth': True}
-        admin_user = logic.get_action('get_site_user')(context, {})
-        context['user'] = admin_user['name']
-
-        # perform shacl validation
-        try:
-            logic.get_action(
-                'ogdch_shacl_validate')(context, data_dict)
-        except Exception as e:
-            self._print_shacl_exception(e)
-        else:
-            self._print_shacl_validation_result(data_dict)
-
-    def _print_shacl_validation_result(self, data_dict):
-        print('\n')
-        print(' Shacl Shape Validation of Harvest Source {}:'
-              .format(data_dict['harvest_source_id']))
-        print(' {}'.format('-' * 80))
-        print(' - data has been serialized: {}'
-              .format(data_dict['datapath']))
-        print(' - validation against shapefile: {}'
-              .format(data_dict['shapefilepath']))
-        print(' - raw shaclresult: {}'
-              .format(data_dict['resultpath']))
-        print(' - csv file with shacl errors has been written: {}'
-              .format(data_dict['csvpath']))
-
-        # read csv file in as pandas dataframe
-        df = pd.read_csv(data_dict['csvpath'], delimiter='|')
-
-        # drop harvester source id when the harvest source is
-        # mandatory
-        df.drop(['harvest_source_id'], axis=1, inplace=True)
-
-        # printing out parse errors:
-        df_errors = df.ix[df.parseerror.notnull()]
-        print("\n Parseerrors: {}".format(len(df_errors)))
-        print(' ---------------')
-        for error in df_errors.parseerror.values:
-            print " - {}".format(error)
-        # drop parseerrors
-        df.drop(df[df.parseerror.notnull()].index, inplace=True)
-
-        # group the results
-        dg = df.groupby(['sh_severity', 'sh_path', 'sh_constraint'])\
-            .size().reset_index().rename(columns={0: 'count'})
-        print("\n Most frequent shacl shape violations:")
-        print(' -------------------------------------')
-        print(dg.sort_values('count', ascending=False)
-              .to_string(index=False))
-        print("\n")

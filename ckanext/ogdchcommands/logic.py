@@ -1,17 +1,9 @@
 import itertools
-import json
-import csv
-import subprocess
-import rdflib
 
 from ckan.logic import NotFound, ValidationError
-from ckan.exceptions import CkanConfigurationException
 import ckan.plugins.toolkit as tk
 from ckan import model
 from ckanext.harvest.model import HarvestSource, HarvestJob, HarvestObject
-from ckanext.dcat.processors import RDFParserException
-from ckanext.ogdchcommands.shaclprocessor import (
-    ShaclParser, SHACLParserException)
 
 import logging
 log = logging.getLogger(__name__)
@@ -135,107 +127,6 @@ def ogdch_cleanup_harvestjobs(context, data_dict):
     # return result of action
     return {'sources': sources_to_cleanup,
             'cleanup': cleanup_result}
-
-
-def ogdch_shacl_validate(context, data_dict):  # noqa
-    """
-    validates a harvest source against a shacl shape
-    """
-
-    # get sources from data_dict
-    if 'harvest_source_id' in data_dict:
-        harvest_source_id = data_dict['harvest_source_id']
-        harvest_source = HarvestSource.get(harvest_source_id)
-        if not harvest_source:
-            raise NotFound('Harvest source {} does not exist'.format(
-                harvest_source_id))
-    else:
-        raise NotFound('Configuration missing for harvest source')
-
-    datapath = data_dict['datapath']
-    resultpath = data_dict['resultpath']
-    shapefilepath = data_dict['shapefilepath']
-    csvpath = data_dict['csvpath']
-    shaclcommand = data_dict['shaclcommand']
-
-    log.info('shacl_validate called for source: {},'
-             'configuration: {}'
-             .format(harvest_source_id, data_dict))
-
-    # get rdf parse config for harvest source
-    rdf_format = json.loads(harvest_source.config)\
-        .get("rdf_format", "xml")
-
-    # parse harvest_source
-    data_rdfgraph = rdflib.Graph()
-
-    # parse data from harvest source url
-    try:
-        data_rdfgraph.parse(harvest_source.url, format=rdf_format)
-    except RDFParserException, e:
-        raise RDFParserException(
-            'Error parsing the RDF file during shacl validation: {0}'
-            .format(e))
-
-    log.debug("parsed source url {} with format {}"
-              .format(harvest_source.url, rdf_format))
-
-    # write parsed data to file
-    try:
-        with open(datapath, 'w') as datawriter:
-            datawriter.write(data_rdfgraph.serialize(format='turtle'))
-    except CkanConfigurationException as e:
-        raise CkanConfigurationException(
-            'Configuration during shacl validation: {0}'
-            .format(e))
-
-    log.debug("datagraph was serialized to turtle: {}"
-              .format(datapath))
-
-    # execute the shacl command
-    try:
-        with open(resultpath, 'w') as resultwriter:
-            subprocess.call(
-                [shaclcommand,
-                 "validate",
-                 "--shapes", shapefilepath,
-                 "--data", datapath],
-                stdout=resultwriter)
-    except CkanConfigurationException as e:
-        raise CkanConfigurationException(
-            'Configuration during shacl validation: {0}'
-            .format(e))
-
-    log.debug("shacl command was executed: {}"
-              .format(resultpath))
-
-    shaclparser = ShaclParser(resultpath, harvest_source_id)
-    try:
-        shaclparser.parse()
-    except SHACLParserException as e:
-        raise CkanConfigurationException(
-            'Exception parsing result: {0}. Please try again.'
-            .format(e))
-
-    log.debug("shacl parser is initialized: {}"
-              .format(resultpath, harvest_source_id))
-
-    # write shacl errors to csv file
-    with open(csvpath, 'w') as csvfile:
-        writer = csv.DictWriter(
-            csvfile, fieldnames=shaclparser.resultdictkeys,
-            delimiter='|', restval='')
-        writer.writeheader()
-        for resultdict in shaclparser.shaclresults():
-            try:
-                writer.writerow(resultdict)
-            except UnicodeEncodeError as e:
-                resultdict = {
-                    shaclparser.resultdictkey_harvestsourceid:
-                        harvest_source_id,
-                    shaclparser.resultdictkey_parseerror: e
-                }
-                writer.writerow(resultdict)
 
 
 def ogdch_cleanup_resources(context, data_dict):

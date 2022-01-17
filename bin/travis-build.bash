@@ -59,65 +59,12 @@ cd ckan
 paster db init -c test-core.ini
 cd -
 
-# The version of setuptools in CKAN (36.1) falls over when installing
-# dependencies for ckanext-scheming on Travis, specifically ckantoolkit.
-# A newer setuptools version works, possibly because in versions >42,
-# pip is used to install dependencies listed in install_requires in
-# setup.py.
-echo "Upgrading setuptools..."
-pip install --upgrade setuptools
-
-echo "Installing ckanext-scheming and its requirements..."
-git clone https://github.com/ckan/ckanext-scheming
-cd ckanext-scheming
-python setup.py develop
-cd -
-
-echo "Installing ckanext-fluent and its requirements..."
-git clone https://github.com/ckan/ckanext-fluent
-cd ckanext-fluent
-python setup.py develop
-cd -
-
-echo "Installing ckanext-hierarchy and its requirements..."
-git clone https://github.com/opendata-swiss/ckanext-hierarchy
-cd ckanext-hierarchy
-python setup.py develop
-cd -
-
 echo "Installing ckanext-harvest and its requirements..."
 git clone https://github.com/ckan/ckanext-harvest
 cd ckanext-harvest
 python setup.py develop
 pip install -r pip-requirements.txt
 paster harvester initdb -c ../ckan/test-core.ini
-cd -
-
-echo "Installing ckanext-dcat and its requirements..."
-git clone https://github.com/ckan/ckanext-dcat
-cd ckanext-dcat
-python setup.py develop
-pip install -r requirements.txt
-pip install -r dev-requirements.txt
-cd -
-
-echo "Installing ckanext-xloader and its requirements..."
-git clone https://github.com/ckan/ckanext-xloader
-cd ckanext-xloader
-python setup.py develop
-pip install -r requirements.txt
-cd -
-
-echo "Installing ckanext-showcase..."
-git clone https://github.com/ckan/ckanext-showcase
-cd ckanext-showcase
-python setup.py develop
-cd -
-
-echo "Installing ckanext-switzerland-ng..."
-git clone https://github.com/opendata-swiss/ckanext-switzerland-ng
-cd ckanext-switzerland-ng
-python setup.py develop
 cd -
 
 echo "Installing ckanext-ogdchcommands and its requirements..."
