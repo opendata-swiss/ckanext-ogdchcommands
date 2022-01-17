@@ -38,7 +38,7 @@ and from the dependent table package_extra_revision.
 The command comes with a dryrun option.
 
 ```bash
-paster --plugin=ckanext-ogdchcommands ogdch cleanup_extra publishers --drayrun -c /var/www/ckan/development.ini
+paster --plugin=ckanext-ogdchcommands ogdch cleanup_extras publishers --dryrun -c /var/www/ckan/development.ini
 ```
 
 ## Command to cleanup the harvest jobs.
