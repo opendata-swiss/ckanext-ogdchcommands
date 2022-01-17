@@ -65,11 +65,13 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         paster ogdch publish_scheduled_datasets [--dryrun]
 
         # Cleanup harvester sources:
-        # - deletes all datasets, jobs and objects related to a harvest source,
-        #     but keeps the source itself
-        # - the default timeframe to keep harvested datasets of a harvest-source: 30 days
-        paster ogdch cleanup_harvestsources
-            [{source_id}] [--keep_harvestsource_timeframe={n}]
+        # - check all harvest sources and the presents of harvest jobs,
+        #   for harvesters, which last jobs are finished for more than n-days,
+        #   the clearsource command will be executed
+        #   that deletes all datasets, jobs and objects, but keeps the source itself
+        # - the default timeframe to keep harvested datasets is 30 days
+        paster ogdch clear_stale_harvestsources
+            [{source_id}] [--keep_harvestsource_days={n}]
 
     '''
     summary = __doc__.split('\n')[0]
@@ -91,9 +93,9 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             default='ech-0200.shacl.ttl',
             help='shape file name for shacl shape validation')
         self.parser.add_option(
-            '--keep_harvestsource', action="store", type="int", dest='tf_to_keep_harvested_dsets',
+            '--keep_harvestsource_days', action="store", type="int", dest='timeframe_to_keep_harvested_datasets',
             default=30,
-            help='Initial Timeframe to keep harvested datasets')
+            help='Initial timeframe to keep harvested datasets, jobs and objects.')
 
     def command(self):
         # load pylons config
@@ -105,7 +107,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             'shacl_validate': self.shacl_validate,
             'publish_scheduled_datasets': self.publish_scheduled_datasets,
             'cleanup_resources': self.cleanup_resources,
-            'cleanup_harvestsources': self.cleanup_harvestsources,
+            'clear_stale_harvestsources': self.clear_stale_harvestsources,
         }
 
         try:
@@ -485,25 +487,19 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
 
 
 
-    def cleanup_harvestsources(self, source=None):
+    def clear_stale_harvestsources(self, source=None):
         """
-        command that clear all datasets, jobs and objects related to a harvest source
+        command that clears all datasets, jobs and objects related to a harvest source
         that was not active for the last 30 days. 30 days is the default value,
-        use --keep_harvestsource_timeframe=n to change timeframe of keeping harvester resources.
-        :argument tf_to_keep_harvested_dsets: int (optional)
+        use --keep_harvestsource_days=n to change timeframe of keeping harvester objects.
+        :argument timeframe_to_keep_harvested_datasets
+        : int (optional)
         """
         # get source from arguments
-        source_id = None
         data_dict = {}
-        if len(self.args) >= 2:
-            source_id = unicode(self.args[1])
-            data_dict['harvest_source_id'] = source_id
-            print('Cleaning up jobs for harvest source {}'.format(source_id))
-        else:
-            print('Cleaning up jobs for all harvest sources')
 
         # get named argument
-        data_dict['timeframe_to_keep_harvested_datasets'] = self.options.tf_to_keep_harvested_dsets
+        data_dict['timeframe_to_keep_harvested_datasets'] = self.options.timeframe_to_keep_harvested_datasets
 
         # set context
         context = {'model': model,
@@ -515,11 +511,12 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         # test authorization
         try:
             logic.check_access('harvest_sources_clear', context, data_dict)
-            print("User is authorized to perform this action.")
+            print("User is authorized to perform this action")
         except logic.NotAuthorized:
-            print("User is not authorized to perform this action.")
+            print("User is not authorized to perform this action")
             sys.exit(1)
 
         # cleanup harvest source
-        logic.get_action('ogdch_cleanup_harvestsource')(
-            context, {'tf_to_keep_harvested_dsets':  self.options.tf_to_keep_harvested_dsets})
+        nr_cleanup_harvesters = logic.get_action('ogdch_cleanup_harvestsource')(
+            context, {'timeframe_to_keep_harvested_datasets':  self.options.timeframe_to_keep_harvested_datasets})
+        print("{} harvest sources were cleared".format(nr_cleanup_harvesters["count_cleared_harvestsource"]))

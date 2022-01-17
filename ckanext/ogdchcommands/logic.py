@@ -277,12 +277,14 @@ def ogdch_cleanup_harvestsource(context, data_dict):
     """
 
     # get the last day to keep harvested datasets
-    tf_to_keep_harvested_dsets = data_dict.get('tf_to_keep_harvested_dsets')
-    last_day_to_keep_harvested_ds = datetime.datetime.now() - datetime.timedelta(tf_to_keep_harvested_dsets)
+    timeframe_to_keep_harvested_datasets = data_dict.get('timeframe_to_keep_harvested_datasets')
+    last_day_to_keep_harvested_ds = datetime.datetime.now() - datetime.timedelta(timeframe_to_keep_harvested_datasets)
 
     # gets all active harvest sources
     harvest_sources = tk.get_action('harvest_source_list')(context, data_dict)
     count_cleared_harvestsource = 0
+    if len(harvest_sources) != 0:
+        print('Cleaning up harvester objects for all harvest sources')
 
     for source in harvest_sources:
         source_dict = tk.get_action('harvest_source_show')(context, {
@@ -292,23 +294,17 @@ def ogdch_cleanup_harvestsource(context, data_dict):
         if not source_dict['status']['last_job']:
             log.info('No jobs yet for this harvest source id={}'.format(source['id']))
         else:
-            jast_job_id = source_dict['status']['last_job']['id']
             last_job_creation_time = source_dict['status']['last_job']['created']
             last_job_creation_time_obj = datetime.datetime.strptime(last_job_creation_time,
                                                                     "%Y-%m-%d %H:%M:%S.%f")
+            last_job_age = (datetime.datetime.now() - last_job_creation_time_obj).days
+            last_job_status = source_dict['status']['last_job']['status']
+            log.info('The latest job of the harvester id={} is {} days old'
+                     .format(source['id'], last_job_age))
 
-            if (last_job_creation_time_obj < last_day_to_keep_harvested_ds):
-                log.info('Harvest latest job id={} with creation_time={} is older than {} days'
-                      .format(jast_job_id, last_job_creation_time,
-                              tf_to_keep_harvested_dsets))
-                log.info('Clears all datasets, jobs and objects related to a harvest source id={}'
-                      .format(jast_job_id))
-                count_cleared_harvestsource += count_cleared_harvestsource
+            if (last_job_creation_time_obj < last_day_to_keep_harvested_ds and last_job_status == "Finished"):
+                count_cleared_harvestsource += 1
                 tk.get_action("harvest_source_clear")(context, {"id": source['id']})
-            else:
-                log.info('Harvest job id={} with creation_time={} is not older than {} days'
-                      .format(jast_job_id, last_job_creation_time,
-                              tf_to_keep_harvested_dsets))
 
     return {
             "count_cleared_harvestsource": count_cleared_harvestsource,
