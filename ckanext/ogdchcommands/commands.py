@@ -60,6 +60,15 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         # that is either today or in the past and sets them to public
         paster ogdch publish_scheduled_datasets [--dryrun]
 
+        # Cleanup harvester sources:
+        # - check all harvest sources and the presents of harvest jobs,
+        #   for harvesters, which last jobs are finished for more than n-days,
+        #   the clearsource command will be executed
+        #   that deletes all datasets, jobs and objects, but keeps the source itself
+        # - the default timeframe to keep harvested datasets is 30 days
+        paster ogdch clear_stale_harvestsources
+        [{source_id}] [--keep_harvestsource_days={n}]
+
     '''
     summary = __doc__.split('\n')[0]
     usage = __doc__
@@ -76,6 +85,12 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             help='dryrun of cleanup harvestjobs and '
                  'publish_scheduled_datasets and cleanup_resources '
                  'and cleanup_extras')
+        self.parser.add_option(
+            '--keep_harvestsource_days', action="store", type="int",
+            dest='timeframe_to_keep_harvested_datasets',
+            default=30,
+            help='Initial timeframe to keep harvested datasets, '
+                 'jobs and objects.')
 
     def command(self):
         # load pylons config
@@ -87,6 +102,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             'publish_scheduled_datasets': self.publish_scheduled_datasets,
             'cleanup_resources': self.cleanup_resources,
             'cleanup_extras': self.cleanup_extras,
+            'clear_stale_harvestsources': self.clear_stale_harvestsources,
         }
 
         try:
@@ -396,3 +412,45 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
                           job.id,
                           job.created.strftime('%Y-%m-%d %H:%M:%S'),
                           job.status))
+
+    def clear_stale_harvestsources(self, source=None):
+        """
+        command that clears all datasets, jobs and objects related
+        to a harvest sourcethat was not active for
+        a given amount of days (default 30 days).
+        use --keep_harvestsource_days=n to change timeframe
+        of keeping harvester objects.
+        :argument timeframe_to_keep_harvested_datasets
+        : int (optional)
+        """
+        # get source from arguments
+        data_dict = {}
+
+        # get named argument
+        data_dict['timeframe_to_keep_harvested_datasets'] = \
+            self.options.timeframe_to_keep_harvested_datasets
+
+        # set context
+        context = {'model': model,
+                   'session': model.Session,
+                   'ignore_auth': True}
+        admin_user = logic.get_action('get_site_user')(context, {})
+        context['user'] = admin_user['name']
+
+        # test authorization
+        try:
+            logic.check_access('harvest_sources_clear', context, data_dict)
+            print("User is authorized to perform this action")
+        except logic.NotAuthorized:
+            print("User is not authorized to perform this action")
+            sys.exit(1)
+
+        # cleanup harvest source
+        nr_cleanup_harvesters = logic.get_action(
+            'ogdch_cleanup_harvestsource')(
+            context, {
+                'timeframe_to_keep_harvested_datasets':
+                    self.options.timeframe_to_keep_harvested_datasets
+            })
+        print("{} harvest sources were cleared".format(
+            nr_cleanup_harvesters["count_cleared_harvestsource"]))
