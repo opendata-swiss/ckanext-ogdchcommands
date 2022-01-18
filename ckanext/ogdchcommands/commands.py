@@ -4,7 +4,6 @@ import traceback
 import ckan.lib.cli
 import ckan.logic as logic
 from datetime import datetime
-import datetime
 from ckan import model
 
 msg_resource_cleanup_dryrun = """Resources cleanup:
@@ -89,9 +88,11 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             default='ech-0200.shacl.ttl',
             help='shape file name for shacl shape validation')
         self.parser.add_option(
-            '--keep_harvestsource_days', action="store", type="int", dest='timeframe_to_keep_harvested_datasets',
+            '--keep_harvestsource_days', action="store", type="int",
+            dest='timeframe_to_keep_harvested_datasets',
             default=30,
-            help='Initial timeframe to keep harvested datasets, jobs and objects.')
+            help='Initial timeframe to keep harvested datasets, '
+                 'jobs and objects.')
 
     def command(self):
         # load pylons config
@@ -414,12 +415,13 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
                           job.created.strftime('%Y-%m-%d %H:%M:%S'),
                           job.status))
 
-
     def clear_stale_harvestsources(self, source=None):
         """
-        command that clears all datasets, jobs and objects related to a harvest source
-        that was not active for a given amount of days (default 30 days).
-        use --keep_harvestsource_days=n to change timeframe of keeping harvester objects.
+        command that clears all datasets, jobs and objects related
+        to a harvest sourcethat was not active for
+        a given amount of days (default 30 days).
+        use --keep_harvestsource_days=n to change timeframe
+        of keeping harvester objects.
         :argument timeframe_to_keep_harvested_datasets
         : int (optional)
         """
@@ -427,7 +429,8 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         data_dict = {}
 
         # get named argument
-        data_dict['timeframe_to_keep_harvested_datasets'] = self.options.timeframe_to_keep_harvested_datasets
+        data_dict['timeframe_to_keep_harvested_datasets'] = \
+            self.options.timeframe_to_keep_harvested_datasets
 
         # set context
         context = {'model': model,
@@ -446,5 +449,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
 
         # cleanup harvest source
         nr_cleanup_harvesters = logic.get_action('ogdch_cleanup_harvestsource')(
-            context, {'timeframe_to_keep_harvested_datasets':  self.options.timeframe_to_keep_harvested_datasets})
-        print("{} harvest sources were cleared".format(nr_cleanup_harvesters["count_cleared_harvestsource"]))
+            context, {'timeframe_to_keep_harvested_datasets':
+                          self.options.timeframe_to_keep_harvested_datasets})
+        print("{} harvest sources were cleared".format(
+            nr_cleanup_harvesters["count_cleared_harvestsource"]))
