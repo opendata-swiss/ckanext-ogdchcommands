@@ -203,7 +203,8 @@ def ogdch_cleanup_harvestsource(context, data_dict):
     timeframe_to_keep_harvested_datasets = \
         data_dict.get('timeframe_to_keep_harvested_datasets')
     last_day_to_keep_harvested_ds = \
-        datetime.datetime.now() - datetime.timedelta(timeframe_to_keep_harvested_datasets)
+        datetime.datetime.now() \
+        - datetime.timedelta(timeframe_to_keep_harvested_datasets)
 
     # gets all active harvest sources
     harvest_sources = tk.get_action('harvest_source_list')(context, data_dict)
@@ -220,7 +221,8 @@ def ogdch_cleanup_harvestsource(context, data_dict):
             log.info('No jobs yet for this harvest source id={}'.format(
                 source['id']))
         else:
-            last_job_creation_time = source_dict['status']['last_job']['created']
+            last_job_creation_time = \
+                source_dict['status']['last_job']['created']
             last_job_creation_time_obj = datetime.datetime.strptime(
                 last_job_creation_time, "%Y-%m-%d %H:%M:%S.%f")
             last_job_age = (
@@ -238,3 +240,4 @@ def ogdch_cleanup_harvestsource(context, data_dict):
     return {
             "count_cleared_harvestsource": count_cleared_harvestsource,
     }
+

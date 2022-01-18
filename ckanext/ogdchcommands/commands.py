@@ -448,8 +448,12 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             sys.exit(1)
 
         # cleanup harvest source
-        nr_cleanup_harvesters = logic.get_action('ogdch_cleanup_harvestsource')(
-            context, {'timeframe_to_keep_harvested_datasets':
-                          self.options.timeframe_to_keep_harvested_datasets})
+        nr_cleanup_harvesters = logic.get_action(
+            'ogdch_cleanup_harvestsource')(
+            context, {
+                'timeframe_to_keep_harvested_datasets':
+                    self.options.timeframe_to_keep_harvested_datasets
+            })
         print("{} harvest sources were cleared".format(
             nr_cleanup_harvesters["count_cleared_harvestsource"]))
+        
