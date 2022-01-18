@@ -240,4 +240,3 @@ def ogdch_cleanup_harvestsource(context, data_dict):
     return {
             "count_cleared_harvestsource": count_cleared_harvestsource,
     }
-

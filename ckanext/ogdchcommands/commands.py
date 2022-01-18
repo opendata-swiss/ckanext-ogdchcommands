@@ -456,4 +456,3 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             })
         print("{} harvest sources were cleared".format(
             nr_cleanup_harvesters["count_cleared_harvestsource"]))
-        
