@@ -4,6 +4,7 @@ from ckan.logic import NotFound, ValidationError
 import ckan.plugins.toolkit as tk
 from ckan import model
 from ckanext.harvest.model import HarvestSource, HarvestJob, HarvestObject
+import datetime
 
 import logging
 log = logging.getLogger(__name__)
@@ -190,4 +191,52 @@ def cleanup_package_extra(context, data_dict):
     return {
         "count_deleted": count,
         "dryrun": dryrun,
+    }
+
+
+def ogdch_cleanup_harvestsource(context, data_dict):
+    """
+    cleaning up jobs for all harvest sources
+    """
+
+    # get the last day to keep harvested datasets
+    timeframe_to_keep_harvested_datasets = \
+        data_dict.get('timeframe_to_keep_harvested_datasets')
+    last_day_to_keep_harvested_ds = \
+        datetime.datetime.now() \
+        - datetime.timedelta(timeframe_to_keep_harvested_datasets)
+
+    # gets all active harvest sources
+    harvest_sources = tk.get_action('harvest_source_list')(context, data_dict)
+    count_cleared_harvestsource = 0
+    if len(harvest_sources) != 0:
+        print('Cleaning up harvester objects for all harvest sources')
+
+    for source in harvest_sources:
+        source_dict = tk.get_action('harvest_source_show')(context, {
+            'id': source['id']
+        })
+        # check if there are any harvest jobs
+        if not source_dict['status']['last_job']:
+            log.info('No jobs yet for this harvest source id={}'.format(
+                source['id']))
+        else:
+            last_job_creation_time = \
+                source_dict['status']['last_job']['created']
+            last_job_creation_time_obj = datetime.datetime.strptime(
+                last_job_creation_time, "%Y-%m-%d %H:%M:%S.%f")
+            last_job_age = (
+                    datetime.datetime.now() - last_job_creation_time_obj).days
+            last_job_status = source_dict['status']['last_job']['status']
+            log.info('The latest job of the harvester id={} is {} days old'
+                     .format(source['id'], last_job_age))
+
+            if (last_job_creation_time_obj < last_day_to_keep_harvested_ds
+                    and last_job_status == "Finished"):
+                count_cleared_harvestsource += 1
+                tk.get_action("harvest_source_clear")(context,
+                                                      {"id": source['id']})
+
+    return {
+            "count_cleared_harvestsource": count_cleared_harvestsource,
     }
