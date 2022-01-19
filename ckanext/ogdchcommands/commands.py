@@ -67,7 +67,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         #   that deletes all datasets, jobs and objects, but keeps the source itself
         # - the default timeframe to keep harvested datasets is 30 days
         paster ogdch clear_stale_harvestsources
-        [{source_id}] [--keep_harvestsource_days={n}]
+        [--keep_harvestsource_days={n}]
 
     '''
     summary = __doc__.split('\n')[0]

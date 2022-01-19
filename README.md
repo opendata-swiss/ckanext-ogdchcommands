@@ -58,6 +58,15 @@ This command will look for private datasets that have the `scheduled`-field set 
 paster --plugin=ckanext-ogdchcommands ogdch publish_scheduled_datasets [--dryrun] -c /var/www/ckan/development.ini
 ```
 
+## Command to clear stale harvest sources.
+This commands clears all datasets, jobs and objects related to a harvest source 
+that was not active for a given amount of days (default 30 days).
+The command is supposed to be used in a cron job and to check all harvest sources.
+
+```bash
+paster --plugin=ckanext-ogdchcommands ogdch clear_stale_harvestsources [--keep_harvestsource_days={n}}] -c /var/www/ckan/development.ini
+```
+
 ## Installation
 
 To install ckanext-ogdchcommands:
