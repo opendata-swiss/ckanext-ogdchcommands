@@ -54,7 +54,6 @@ setup(
     [ckan.plugins]
         ogdch_cmd=ckanext.ogdchcommands.plugin:OgdchCommandsPlugin
         ogdch_admin=ckanext.ogdchcommands.plugin:OgdchAdminPlugin
-        ogdch_migrate=ckanext.ogdchcommands.plugin:OgdchMigrationPlugin
         
     [paste.paster_command]
         ogdch=ckanext.ogdchcommands.commands:OgdchCommands
