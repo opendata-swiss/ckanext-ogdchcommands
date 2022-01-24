@@ -29,7 +29,7 @@ def ogdch_reindex(context, data_dict):
             'error': str(e),
             'traceback': traceback.format_exc()
         }
-    return "Success: search index was rebuild"
+    return "Success: search index was rebuilt"
 
 
 @side_effect_free
