@@ -50,8 +50,12 @@ def ogdch_check_indexing(context, data_dict):
         pkgs_not_indexed = pkgs - indexed_pkgs
         return ("there are {} packages not indexed"
                 .format(len(pkgs_not_indexed)))
-    except Exception:
-        return "An Error occured"
+    except Exception as e:
+        return {
+            'msg': "an error occured",
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }
 
 
 @side_effect_free
