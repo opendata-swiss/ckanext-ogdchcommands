@@ -1,8 +1,10 @@
 ckanext-ogdchcommands
 =====================
 
-CKAN extension for DCAT-AP Switzerland
-providing commands to run in the background
+CKAN extension for DCAT-AP Switzerland. This extension provides two CKAN plugins:
+
+- `ogdch_cmd`: providing commands to run in the background
+- `ogdch_admin`: admin tools mainly for handeling of solr
 
 ## Requirements
 
@@ -11,8 +13,10 @@ providing commands to run in the background
 - ckanext-harvest
 - ckanext-datastore
 
+## `ogdch_cmd` Paster Commands
 
-## Command to cleanup the datastore database.
+
+### Command to cleanup the datastore database.
 [Datastore currently does not delete tables](https://github.com/ckan/ckan/issues/3422) when the corresponding resource is deleted.
 This command finds these orphaned tables and deletes its rows to free the space in the database.
 It is meant to be run regularly by a cronjob.
@@ -52,7 +56,7 @@ database before the actual database changes are performed.
 paster --plugin=ckanext-ogdchcommands ogdch cleanup_harvestjobs [{source_id}] [--keep={n}}] [--dryrun] -c /var/www/ckan/development.ini
 ```
 
-## Command to publish private datasets that have a scheduled-date.
+### Command to publish private datasets that have a scheduled-date.
 This command will look for private datasets that have the `scheduled`-field set and will publish it if it is due.
 ```bash
 paster --plugin=ckanext-ogdchcommands ogdch publish_scheduled_datasets [--dryrun] -c /var/www/ckan/development.ini
@@ -66,6 +70,24 @@ The command is supposed to be used in a cron job and to check all harvest source
 ```bash
 paster --plugin=ckanext-ogdchcommands ogdch clear_stale_harvestsources [--keep_harvestsource_days={n}}] -c /var/www/ckan/development.ini
 ```
+
+## `ogdch_admin` Admin Tools
+
+The following Api Calls can be used if this plugin is installed:
+
+- `https://ckan.ogdch-test.clients.liip.ch/api/3/action/ogdch_check_indexing`
+
+checks whether there are any unindexed packages in CKAN
+
+- `https://ckan.ogdch-test.clients.liip.ch/api/3/action/ogdch_reindex`
+
+reindexes Solr. You can use it with these arguments: `package_id=<name of the dataset>` and `only_missing=true`
+In the later case only datasets missing in the index will get reindexed
+
+- `https://ckan.ogdch-test.clients.liip.ch/api/3/action/ogdch_check_field?field=<name of the field>>`
+
+This checks the database and looks for the given fields in there: the field values will be reported back together
+with the dataset name.
 
 ## Installation
 
@@ -81,19 +103,22 @@ To install ckanext-ogdchcommands:
 
 3. Add ``ogdch_cmd`` to the ``ckan.plugins`` setting in your CKAN
    config file (by default the config file is located at
-   ``/etc/ckan/default/production.ini``).
+   ``/etc/ckan/default/production.ini``) if you want to use the paster commands
+4. Add ``ogdch_admin`` to the ``ckan.plugins`` setting in your CKAN
+   config file (by default the config file is located at
+   ``/etc/ckan/default/production.ini``) if you want to use the solr admin tools
+   
 
-4. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu:
+5. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu:
 
      sudo service apache2 reload
 
 ## Config Settings
 
-This extension uses the following config options (.ini file)
+This `ogdch_cmd` uses the following config options (.ini file)
 
     # number of harvest jobs to keep per harvest source when cleaning up harvest objects   
     ckanext.ogdchcommands.number_harvest_jobs_per_source = 2
-
 
 ## Development Installation
 
