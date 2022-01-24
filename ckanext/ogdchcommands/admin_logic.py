@@ -6,7 +6,7 @@ import traceback
 from ckan import authz
 from ckan.lib.search import rebuild as rebuild_search_index
 from ckan.lib.search import query_for
-from ckan.plugins.toolkit import side_effect_free
+from ckan.plugins.toolkit import side_effect_free, get_or_bust
 import ckan.model as model
 import ckan.plugins.toolkit as tk
 
@@ -61,7 +61,7 @@ def ogdch_check_field(context, data_dict):
     current_user = context.get('user')
     if not authz.is_sysadmin(current_user):
         return "not authorized"
-    field = data_dict.get('field')
+    field = get_or_bust(data_dict, 'field')
     if not field:
         return "please provide a field name with field="
 
