@@ -24,8 +24,6 @@ def ogdch_reindex(context, data_dict):
     try:
         rebuild_search_index(package_id=package_id, only_missing=only_missing)
     except Exception as e:
-        log.error(str(e))
-        log.error(traceback.format_exc())
         return {
             'msg': "an error occured",
             'error': str(e),
@@ -95,15 +93,10 @@ def _search_for_datasets(context):
     result_count = 0
     fq = "dataset_type:(dataset)"
     processed_count = 0
-    log.error("search for datasets")
     while page == 0 or processed_count < result_count:
         try:
-            log.error("now searching")
             page = page + 1
             start = (page - 1) * rows
-            log.error(fq)
-            log.error(rows)
-            log.error(start)
             data_dict = {
                 'fq': fq,
                 'rows': rows,
@@ -111,7 +104,6 @@ def _search_for_datasets(context):
                 'include_private': True
             }
             result = tk.get_action('package_search')(context, data_dict)
-            log.error("result")
             print("{} datasets have been found".format(result['count']))
             if not result_count:
                 result_count = result['count']
