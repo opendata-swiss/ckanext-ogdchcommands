@@ -75,16 +75,16 @@ paster --plugin=ckanext-ogdchcommands ogdch clear_stale_harvestsources [--keep_h
 
 The following Api Calls can be used if this plugin is installed:
 
-- `https://ckan.ogdch-test.clients.liip.ch/api/3/action/ogdch_check_indexing`
+- `/api/3/action/ogdch_check_indexing`
 
 checks whether there are any unindexed packages in CKAN
 
-- `https://ckan.ogdch-test.clients.liip.ch/api/3/action/ogdch_reindex`
+- `/api/3/action/ogdch_reindex`
 
 reindexes Solr. You can use it with these arguments: `package_id=<name of the dataset>` and `only_missing=true`
 In the later case only datasets missing in the index will get reindexed
 
-- `https://ckan.ogdch-test.clients.liip.ch/api/3/action/ogdch_check_field?field=<name of the field>>`
+- `/api/3/action/ogdch_check_field?field=<name of the field>>`
 
 This checks the database and looks for the given fields in there: the field values will be reported back together
 with the dataset name.
