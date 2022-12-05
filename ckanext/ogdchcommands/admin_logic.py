@@ -9,6 +9,7 @@ from ckan.lib.search import query_for
 from ckan.plugins.toolkit import side_effect_free, get_or_bust
 import ckan.model as model
 import ckan.plugins.toolkit as tk
+from ckan.logic import NotFound
 
 log = logging.getLogger(__name__)
 
@@ -121,3 +122,51 @@ def _search_for_datasets(context):
                   "packages with fq: {}, error: {}"
                   .format(fq, e))
             break
+
+
+@side_effect_free
+def ogdch_activity_search(context, data_dict):
+    '''
+    Show recent activities
+    '''
+    user = tk.get_action('get_site_user')({'ignore_auth': True}, {})
+    context.update({'user': user['name']})
+
+    result = tk.get_action('recently_changed_packages_activity_list')(context, data_dict)
+    activities = []
+    for item in result:
+        mapped_activity =  _check_and_map_activity_item(item)
+        if mapped_activity:
+            activities.append(mapped_activity)
+    if activities:
+        return activities
+    else:
+        raise NotFound
+
+
+def _check_and_map_activity_item(item):
+    activity_type = item.get('activity_type')
+    user_id = item.get('user_id')
+    object_id = item.get('object_id')
+    data = item.get('data')
+    activity_relates_to_a_package = activity_type and 'package' in activity_type
+    if not activity_relates_to_a_package:
+        return False
+    activity = {}
+    try:
+        user = tk.get_action('user_show')({}, {'id': user_id})
+        activity['user'] = user.get('name')
+    except NotFound:
+        activity['user'] = user_id
+    try:
+        package = tk.get_action('package_show')({},
+                                                {'id': object_id})
+        if package.get('type') != 'dataset':
+            return False
+        if item.get('data') and data.get('message'):
+            activity['message'] = data['message']
+        activity['package'] = package.get('name')
+    except NotFound:
+        activity['package'] = object_id
+    activity['time'] = item.get('timestamp')
+    return activity
