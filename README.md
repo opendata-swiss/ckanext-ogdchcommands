@@ -84,10 +84,16 @@ checks whether there are any unindexed packages in CKAN
 reindexes Solr. You can use it with these arguments: `package_id=<name of the dataset>` and `only_missing=true`
 In the later case only datasets missing in the index will get reindexed
 
-- `/api/3/action/ogdch_check_field?field=<name of the field>>`
+- `/api/3/action/ogdch_check_field?field=<name of the field>`
 
 This checks the database and looks for the given fields in there: the field values will be reported back together
 with the dataset name.
+
+- `/api/3/action/ogdch_latest_dataset_activities`
+
+shows the latests activities on datasets with username, datasetname and a message if available.
+(The user `harvest-notification` adds during harvesting messages about the change that occured on a 
+dataset to the activity that it creates in case of a change on the dataset.)
 
 ## Installation
 
