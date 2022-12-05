@@ -167,7 +167,7 @@ def _check_and_map_activity_item(item):
                                                 {'id': object_id})
         if package.get('type') != 'dataset':
             return False
-        if item.get('data') and data.get('message'):
+        if data and data.get('message'):
             activity['message'] = data['message']
         activity['package'] = package.get('name')
     except NotFound:
