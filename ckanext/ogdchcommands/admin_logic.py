@@ -132,10 +132,13 @@ def ogdch_activity_search(context, data_dict):
     user = tk.get_action('get_site_user')({'ignore_auth': True}, {})
     context.update({'user': user['name']})
 
-    result = tk.get_action('recently_changed_packages_activity_list')(context, data_dict)
+    result = tk.get_action('recently_changed_packages_activity_list')(
+        context,
+        data_dict,
+    )
     activities = []
     for item in result:
-        mapped_activity =  _check_and_map_activity_item(item)
+        mapped_activity = _check_and_map_activity_item(item)
         if mapped_activity:
             activities.append(mapped_activity)
     if activities:
@@ -149,7 +152,8 @@ def _check_and_map_activity_item(item):
     user_id = item.get('user_id')
     object_id = item.get('object_id')
     data = item.get('data')
-    activity_relates_to_a_package = activity_type and 'package' in activity_type
+    activity_relates_to_a_package = \
+        activity_type and 'package' in activity_type
     if not activity_relates_to_a_package:
         return False
     activity = {}
