@@ -125,9 +125,9 @@ def _search_for_datasets(context):
 
 
 @side_effect_free
-def ogdch_activity_search(context, data_dict):
+def ogdch_latest_dataset_activities(context, data_dict):
     '''
-    Show recent activities
+    Show recent activities for datasets
     '''
     user = tk.get_action('get_site_user')({'ignore_auth': True}, {})
     context.update({'user': user['name']})

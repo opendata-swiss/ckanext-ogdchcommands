@@ -49,5 +49,5 @@ class OgdchAdminPlugin(plugins.SingletonPlugin):
             'ogdch_reindex': admin.ogdch_reindex,
             'ogdch_check_indexing': admin.ogdch_check_indexing,
             'ogdch_check_field': admin.ogdch_check_field,
-            'ogdch_activity_search': admin.ogdch_activity_search,
+            'ogdch_latest_dataset_activities': admin.ogdch_latest_dataset_activities, # noqa
         }
