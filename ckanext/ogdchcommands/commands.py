@@ -9,7 +9,9 @@ from datetime import datetime
 
 msg_resource_cleanup_dryrun = """Resources cleanup:
 ==================
-There are {} resources in status 'deleted'.
+There are {0} resources in status 'deleted'.
+There are {1} filestore-entries associated with those resources that can be deleted.
+{2}
 If you want to delete them, run this command
 again without the option --dryrun!"""
 
@@ -44,9 +46,6 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         # - also cleans their dependencies in resource_view and resource_revision
         # - the command can be performed with a dryrun option where the
         #   database will remain unchanged
-        paster ogdch cleanup_resources [--delete_filestore_files]
-        # - option delete_filestore_files will also delete associated data from
-        #   the filestore after deleting the orphaned resources
 
 
         # Cleanup package_extras
@@ -97,11 +96,6 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             default=30,
             help='Initial timeframe to keep harvested datasets, '
                  'jobs and objects.')
-        self.parser.add_option(
-            '--delete_filestore_files', action="store_true", dest='delete_filestore_files',
-            default=False,
-            help='Option to delete orphaned filestore-files as well when '
-                 'deleting orphaned resources when running cleanup_resources.')
 
     def command(self):
         # load pylons config
@@ -292,14 +286,13 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             context,
             {
                 'dryrun': self.options.dryrun,
-                'delete_filestore_files': self.options.delete_filestore_files,
             })
         if self.options.dryrun:
             print(msg_resource_cleanup_dryrun
-                  .format(result.get('count_deleted')))
+                  .format(result.get('count_deleted'), result.get('count_filestores'), result.get('filepaths')))
         else:
             print(msg_resource_cleanup
-                  .format(result.get('count_deleted')))
+                  .format(result.get('count_deleted', result.get('count_filestores'), result.get('filepaths'))))
 
     def cleanup_extras(self, key=None):
         """

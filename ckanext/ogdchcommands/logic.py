@@ -157,11 +157,9 @@ def ogdch_cleanup_resources(context, data_dict):
     """
     cleans up the database from resources that have been deleted
     """
-    # setup
 
 
     dryrun = data_dict.get('dryrun')
-    delete_filestore_files = data_dict.get('delete_filestore_files')
     tk.check_access('resource_delete', context, data_dict)
     delete_resources = model.Session.query(model.Resource) \
         .filter(model.Resource.state == 'deleted') \
@@ -185,25 +183,27 @@ def ogdch_cleanup_resources(context, data_dict):
                   "dependencies: resource_revision and resource_view"
                   .format(count))
 
-    if not dryrun and delete_filestore_files:
-        filepaths = []
-        # check the FileStore for artifacts of that resource
-        for id in delete_resources_ids:
-            directory = get_directory(id)
-            filepath = get_path(id)
-            filepaths.append(filepath)
+    filepaths = []
+    # check the FileStore for artifacts of that resource
+    for id in delete_resources_ids:
+        directory = get_directory(id)
+        filepath = get_path(id)
+        if os.path.exists(filepath):
+            filepaths.append(str(filepath))
 
+    if not dryrun:
         for filepath in filepaths:
             try:
-                if os.path.exists(filepath):
-                    log.info("Deleting {}.".format(filepath))
-                    os.remove(filepath)
+                log.info("Deleting {}.".format(filepath))
+                os.remove(filepath)
             except OSError:
                 log.error("Deleting {} caused an error and was NOT deleted. ".format(filepath))
                 pass
     return {
         "count_deleted": count,
         "dryrun": dryrun,
+        "count_filestores": len(filepaths),
+        "filepaths": filepaths,
     }
 
 
