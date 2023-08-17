@@ -132,18 +132,6 @@ def ogdch_cleanup_harvestjobs(context, data_dict):
     return {'sources': sources_to_cleanup,
             'cleanup': cleanup_result}
 
-def get_directory(id):
-        if storage_path is None:
-            raise TypeError("storage_path is not defined")
-
-        real_storage = os.path.realpath(storage_path)
-        directory = os.path.join(real_storage, id[0:3], id[3:6])
-        if directory != os.path.realpath(directory):
-            raise logic.ValidationError({
-                'upload': ['Invalid storage directory']
-            })
-        return directory
-
 def get_path(id):
         directory = get_directory(id)
         filepath = os.path.join(directory, id[6:])
@@ -169,6 +157,9 @@ def ogdch_cleanup_resources(context, data_dict):
     """
     cleans up the database from resources that have been deleted
     """
+    # setup
+
+
     dryrun = data_dict.get('dryrun')
     delete_filestore_files = data_dict.get('delete_filestore_files')
     tk.check_access('resource_delete', context, data_dict)
