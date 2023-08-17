@@ -5,8 +5,9 @@ import ckan.plugins.toolkit as tk
 from ckan import model
 from ckanext.harvest.model import HarvestSource, HarvestJob, HarvestObject
 import datetime
-import os
 from ckan.common import config
+import os
+import re
 
 import logging
 log = logging.getLogger(__name__)
@@ -203,6 +204,47 @@ def ogdch_cleanup_resources(context, data_dict):
         "count_deleted": count,
         "dryrun": dryrun,
         "count_filestores": len(filepaths),
+        "filepaths": filepaths,
+    }
+
+def get_resource_id(filepath):
+    # resource id: 4b518a89-25eb-45a6-99aa-1be4f67ad414
+    # filepath:    bfb/f4c/75-1efd-474c-a347-6b2690e6344b
+    return re.sub(r'\/', '', filepath)
+
+def ogdch_cleanup_filestore(context, data_dict):
+    """
+    cleans up the filestore files that are no longer associated to any resources.
+    """
+    dryrun = data_dict.get('dryrun')
+    filepaths = []
+
+    for subdir, dirs, files in os.walk(storage_path):
+        for file in files:
+            fullpath = os.path.join(subdir, file)
+            relpath = os.path.relpath(fullpath, storage_path)
+            resource_id = get_resource_id(relpath)
+
+            # check if associated resource exists
+            try:
+                result = tk.get_action('resource_show')(
+                    context,
+                    {'id': resource_id}
+                )
+            except NotFound:
+                filepaths.append(os.path.join(subdir, file))
+                pass
+
+    if not dryrun:
+        for filepath in filepaths:
+            try:
+                log.debug("Deleting {}.".format(filepath))
+                os.remove(filepath)
+            except OSError:
+                log.error("Deleting {} caused an error and was NOT deleted. ".format(filepath))
+                pass
+    return {
+        "file_count": len(filepaths),
         "filepaths": filepaths,
     }
 

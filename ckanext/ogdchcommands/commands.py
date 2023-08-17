@@ -19,6 +19,20 @@ msg_resource_cleanup = """Resources cleanup:
 ==================
 {} resources in status 'deleted' have been deleted."""
 
+msg_filestore_cleanup_dryrun = """Filestore cleanup:
+==================
+There are {0} filestore-entries that are not associated to any resource in the database which can probably be deleted.
+{1}
+If you want to delete them, run this command
+again without the option --dryrun!"""
+
+msg_filestore_cleanup = """Filestore cleanup:
+==================
+{0} filestore-entries that were not associated with any resource in the database have been deleted.
+
+{1}
+"""
+
 msg_package_extra_cleanup_dryrun = """\npackage extra cleanup for key '{1}':\n\n
 There are {0} package extras with key '{1}'.
 If you want to delete them, run this command
@@ -47,6 +61,11 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         # - the command can be performed with a dryrun option where the
         #   database will remain unchanged
 
+        # Cleanup filestore
+        paster ogdch cleanup_filestore [--dryrun]
+        # - delete filestore files that are no longer associated with a resource.
+        # - the command can be performed with a dryrun option where the
+        #   filestore will remain unchanged
 
         # Cleanup package_extras
         paster ogdch cleanup_extras {key}  [--dryrun]
@@ -89,7 +108,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             default=False,
             help='dryrun of cleanup harvestjobs and '
                  'publish_scheduled_datasets and cleanup_resources '
-                 'and cleanup_extras')
+                 'and cleanup_extras and cleanup_filestore')
         self.parser.add_option(
             '--keep_harvestsource_days', action="store", type="int",
             dest='timeframe_to_keep_harvested_datasets',
@@ -106,6 +125,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             'cleanup_harvestjobs': self.cleanup_harvestjobs,
             'publish_scheduled_datasets': self.publish_scheduled_datasets,
             'cleanup_resources': self.cleanup_resources,
+            'cleanup_filestore': self.cleanup_filestore,
             'cleanup_extras': self.cleanup_extras,
             'clear_stale_harvestsources': self.clear_stale_harvestsources,
         }
@@ -265,6 +285,30 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         has_next_page = (len(result['records']) > 0)
 
         return (resource_id_list, has_next_page)
+
+    def cleanup_filestore(self, source=None):
+        """
+        command for cleaning up orphaned filestore-files if the
+        associated resource no longer exists.
+        """
+        user = logic.get_action('get_site_user')({'ignore_auth': True}, {})
+        context = {
+            'model': model,
+            'session': model.Session,
+            'user': user['name']
+        }
+        result = logic.get_action('ogdch_cleanup_filestore')(
+            context,
+            {
+                'dryrun': self.options.dryrun,
+            })
+        if self.options.dryrun:
+            print(msg_filestore_cleanup_dryrun
+                  .format(result.get('filepaths')))
+        else:
+            print(msg_filestore_cleanup
+                  .format(result.get('filepaths')))
+
 
     def cleanup_resources(self, source=None):
         """
