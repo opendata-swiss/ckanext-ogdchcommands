@@ -5,9 +5,12 @@ import ckan.plugins.toolkit as tk
 from ckan import model
 from ckanext.harvest.model import HarvestSource, HarvestJob, HarvestObject
 import datetime
+import os
+from ckan.common import config
 
 import logging
 log = logging.getLogger(__name__)
+storage_path = config.get('ckan.storage_path')
 
 FORMAT_TURTLE = 'ttl'
 DATA_IDENTIFIER = 'data'
@@ -129,12 +132,45 @@ def ogdch_cleanup_harvestjobs(context, data_dict):
     return {'sources': sources_to_cleanup,
             'cleanup': cleanup_result}
 
+def get_directory(id):
+        if storage_path is None:
+            raise TypeError("storage_path is not defined")
+
+        real_storage = os.path.realpath(storage_path)
+        directory = os.path.join(real_storage, id[0:3], id[3:6])
+        if directory != os.path.realpath(directory):
+            raise logic.ValidationError({
+                'upload': ['Invalid storage directory']
+            })
+        return directory
+
+def get_path(id):
+        directory = get_directory(id)
+        filepath = os.path.join(directory, id[6:])
+
+        if filepath != os.path.realpath(filepath):
+            raise logic.ValidationError({'upload': ['Invalid storage path']})
+
+        return filepath
+
+def get_directory(id):
+        if storage_path is None:
+            raise TypeError("storage_path is not defined")
+
+        real_storage = os.path.realpath(storage_path)
+        directory = os.path.join(real_storage, id[0:3], id[3:6])
+        if directory != os.path.realpath(directory):
+            raise logic.ValidationError({
+                'upload': ['Invalid storage directory']
+            })
+        return directory
 
 def ogdch_cleanup_resources(context, data_dict):
     """
     cleans up the database from resources that have been deleted
     """
     dryrun = data_dict.get('dryrun')
+    delete_filestore_files = data_dict.get('delete_filestore_files')
     tk.check_access('resource_delete', context, data_dict)
     delete_resources = model.Session.query(model.Resource) \
         .filter(model.Resource.state == 'deleted') \
@@ -157,6 +193,23 @@ def ogdch_cleanup_resources(context, data_dict):
         log.debug("{} resources have been deleted together with their "
                   "dependencies: resource_revision and resource_view"
                   .format(count))
+
+    if not dryrun and delete_filestore_files:
+        filepaths = []
+        # check the FileStore for artifacts of that resource
+        for id in delete_resources_ids[:100]:
+            directory = get_directory(id)
+            filepath = get_path(id)
+            filepaths.append(filepath)
+
+        for filepath in filepaths:
+            try:
+                if os.path.exists(filepath):
+                    log.info("Deleting {}.".format(filepath))
+                    os.remove(filepath)
+            except OSError:
+                log.error("Deleting {} caused an error and was NOT deleted. ".format(filepath))
+                pass
     return {
         "count_deleted": count,
         "dryrun": dryrun,
