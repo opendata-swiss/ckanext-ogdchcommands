@@ -295,7 +295,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
                   .format(result.get('count_deleted'), result.get('count_filestores'), result.get('filepaths')))
         else:
             print(msg_resource_cleanup
-                  .format(result.get('count_deleted', result.get('count_filestores'), result.get('filepaths'))))
+                  .format(result.get('count_deleted'), result.get('count_filestores'), result.get('filepaths')))
 
     def cleanup_extras(self, key=None):
         """
