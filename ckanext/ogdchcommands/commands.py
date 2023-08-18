@@ -17,7 +17,10 @@ again without the option --dryrun!"""
 
 msg_resource_cleanup = """Resources cleanup:
 ==================
-{} resources in status 'deleted' have been deleted."""
+{0} resources in status 'deleted' have been deleted.
+There are {1} filestore-entries associated with those resources that can be deleted.
+{2}
+"""
 
 msg_package_extra_cleanup_dryrun = """\npackage extra cleanup for key '{1}':\n\n
 There are {0} package extras with key '{1}'.
