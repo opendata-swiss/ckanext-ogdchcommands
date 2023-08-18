@@ -228,7 +228,7 @@ def ogdch_cleanup_filestore(context, data_dict):
 
             # check if associated resource exists
             try:
-                result = tk.get_action('resource_show')(
+                tk.get_action('resource_show')(
                     context,
                     {'id': resource_id}
                 )
