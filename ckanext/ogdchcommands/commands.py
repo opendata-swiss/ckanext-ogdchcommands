@@ -9,7 +9,9 @@ from datetime import datetime
 
 msg_resource_cleanup_dryrun = """Resources cleanup:
 ==================
-There are {} resources in status 'deleted'.
+There are {0} resources in status 'deleted'.
+There are {1} filestore-entries associated with those resources that can be deleted.
+{2}
 If you want to delete them, run this command
 again without the option --dryrun!"""
 
@@ -39,9 +41,12 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
         paster ogdch cleanup_datastore
 
         # Cleanup resources
-        paster ogdch cleanup_resources
+        paster ogdch cleanup_resources [--dryrun]
         # - delete resources that have the state 'deleted'
         # - also cleans their dependencies in resource_view and resource_revision
+        # - the command can be performed with a dryrun option where the
+        #   database will remain unchanged
+
 
         # Cleanup package_extras
         paster ogdch cleanup_extras {key}  [--dryrun]
@@ -279,13 +284,15 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
             sys.exit(1)
         result = logic.get_action('ogdch_cleanup_resources')(
             context,
-            {'dryrun': self.options.dryrun})
+            {
+                'dryrun': self.options.dryrun,
+            })
         if self.options.dryrun:
             print(msg_resource_cleanup_dryrun
-                  .format(result.get('count_deleted')))
+                  .format(result.get('count_deleted'), result.get('count_filestores'), result.get('filepaths')))
         else:
             print(msg_resource_cleanup
-                  .format(result.get('count_deleted')))
+                  .format(result.get('count_deleted', result.get('count_filestores'), result.get('filepaths'))))
 
     def cleanup_extras(self, key=None):
         """
