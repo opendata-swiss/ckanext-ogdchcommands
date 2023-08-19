@@ -226,7 +226,7 @@ def ogdch_cleanup_filestore(context, data_dict):
             relpath = os.path.relpath(fullpath, storage_path)
             resource_id = get_resource_id(relpath)
 
-            # check if associated resource exists
+            tk.check_access('resource_show', context, {'id': resource_id})
             try:
                 tk.get_action('resource_show')(
                     context,
