@@ -5,6 +5,8 @@ import os
 import logging
 import ckanext.ogdchcommands.logic as l
 import ckanext.ogdchcommands.admin_logic as admin
+from ckanext.ogdchcommands.cli import get_commands
+
 log = logging.getLogger(__name__)
 
 __location__ = os.path.realpath(os.path.join(
@@ -15,6 +17,7 @@ __location__ = os.path.realpath(os.path.join(
 
 class OgdchCommandsPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IActions)
+    plugins.implements(plugins.IClick)
 
     # ------------------------------------------------------------
     # IActions
@@ -33,6 +36,10 @@ class OgdchCommandsPlugin(plugins.SingletonPlugin):
             'ogdch_cleanup_harvestsource': l.ogdch_cleanup_harvestsource,
         }
 
+    # IClick
+
+    def get_commands(self):
+        return get_commands()
 
 class OgdchAdminPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IActions)
