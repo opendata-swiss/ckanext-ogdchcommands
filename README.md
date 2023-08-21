@@ -4,28 +4,33 @@ ckanext-ogdchcommands
 CKAN extension for DCAT-AP Switzerland. This extension provides two CKAN plugins:
 
 - `ogdch_cmd`: providing commands to run in the background
-- `ogdch_admin`: admin tools mainly for handeling of solr
+- `ogdch_admin`: admin tools mainly for handling of solr
 
 ## Requirements
 
-- CKAN 2.8+
+- CKAN 2.10+
 - ckanext-switzerland
 - ckanext-harvest
 - ckanext-datastore
 
-## `ogdch_cmd` Paster Commands
+## `ogdch_cmd` Commands
 
+To see the help text for any command:
 
-### Command to cleanup the datastore database.
-[Datastore currently does not delete tables](https://github.com/ckan/ckan/issues/3422) when the corresponding resource is deleted.
-This command finds these orphaned tables and deletes its rows to free the space in the database.
+```bash
+ckan -c /var/www/ckan/development.ini ogdch [command] --help
+```
+
+### Command to clean up the datastore database.
+[Datastore currently does not delete tables](https://github.com/ckan/ckan/issues/3422) when the corresponding resource
+is deleted. This command finds these orphaned tables and deletes its rows to free the space in the database.
 It is meant to be run regularly by a cronjob.
 
 ```bash
-paster --plugin=ckanext-ogdchcommands ogdch cleanup_datastore -c /var/www/ckan/development.ini
+ckan -c /var/www/ckan/development.ini ogdch cleanup_datastore
 ```
 
-## Command to cleanup the resources.
+## Command to clean up the resources.
 When datasets are harvested, we try to reuse the existing resources, but not all of them are 
 reused. Some old resources remain with the state 'deleted'. These orphaned resources can be
 deleted with this command. It is meant to be run regularly by a cronjob. 
@@ -33,20 +38,20 @@ It will also delete all files from the filestore that are associated with the or
 It also comes with a dryrun option.
 
 ```bash
-paster --plugin=ckanext-ogdchcommands ogdch cleanup_resources -c /var/www/ckan/development.ini
+ckan -c /var/www/ckan/development.ini ogdch cleanup_resources
 ```
 
-## Command to cleanup the package extra table.
+## Command to clean up the package extra table.
 When a key is no longer needed in the package_extra table, since it is no longer part of the dataset,
 then after the data have been migrated that old key can be removed from the package_extra table 
 and from the dependent table package_extra_revision.
 The command comes with a dryrun option.
 
 ```bash
-paster --plugin=ckanext-ogdchcommands ogdch cleanup_extras publishers --dryrun -c /var/www/ckan/development.ini
+ckan -c /var/www/ckan/development.ini ogdch cleanup_extras publishers --dryrun
 ```
 
-## Command to cleanup the harvest jobs.
+## Command to clean up the harvest jobs.
 This commands deletes the harvest jobs and objects per source and overall leaving only the latest n,
 where n and the source are optional arguments. The command is supposed to be used in a cron job to 
 provide for a regular cleanup of harvest jobs, so that the database is not overloaded with unneeded data
@@ -54,13 +59,13 @@ of past job runs. It has a dryrun option so that it can be tested what will get 
 database before the actual database changes are performed.
 
 ```bash
-paster --plugin=ckanext-ogdchcommands ogdch cleanup_harvestjobs [{source_id}] [--keep={n}}] [--dryrun] -c /var/www/ckan/development.ini
+ckan -c /var/www/ckan/development.ini ogdch cleanup_harvestjobs [{source_id}] [--keep={n}}] [--dryrun]
 ```
 
 ### Command to publish private datasets that have a scheduled-date.
 This command will look for private datasets that have the `scheduled`-field set and will publish it if it is due.
 ```bash
-paster --plugin=ckanext-ogdchcommands ogdch publish_scheduled_datasets [--dryrun] -c /var/www/ckan/development.ini
+ckan -c /var/www/ckan/development.ini ogdch publish_scheduled_datasets [--dryrun]
 ```
 
 ## Command to clear stale harvest sources.
@@ -69,7 +74,7 @@ that was not active for a given amount of days (default 30 days).
 The command is supposed to be used in a cron job and to check all harvest sources.
 
 ```bash
-paster --plugin=ckanext-ogdchcommands ogdch clear_stale_harvestsources [--keep_harvestsource_days={n}}] -c /var/www/ckan/development.ini
+ckan -c /var/www/ckan/development.ini ogdch clear_stale_harvestsources [--keep_harvestsource_days={n}}]
 ```
 
 ## `ogdch_admin` Admin Tools
