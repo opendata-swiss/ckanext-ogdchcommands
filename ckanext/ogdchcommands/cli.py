@@ -166,8 +166,6 @@ def cleanup_filestore(dryrun):
     """Cleanup filestore
 
     Delete filestore files that are no longer associated with a resource.
-    The command can be performed with a dryrun option where the filestore will
-    remain unchanged.
     """
     user = logic.get_action("get_site_user")({"ignore_auth": True}, {})
     context = {"model": model, "session": model.Session, "user": user["name"]}
@@ -203,8 +201,6 @@ def cleanup_resources(dryrun):
 
     Remove resources that have the state 'deleted' from the database.
     Also cleans their dependencies in resource_view and resource_revision.
-    The command can be performed with a dryrun option where the database will
-    remain unchanged.
     """
     user = logic.get_action("get_site_user")({"ignore_auth": True}, {})
     context = {"model": model, "session": model.Session, "user": user["name"]}
@@ -287,8 +283,6 @@ def cleanup_harvestjobs(nr_of_jobs_to_keep=10, dryrun=False, source_id=None):
 
     Deletes all the harvest jobs and objects except the latest n.
     The default number of jobs to keep is 10.
-    The command can be performed with a dryrun option where the database will
-    remain unchanged.
     """
     data_dict = {
         "number_of_jobs_to_keep": nr_of_jobs_to_keep,
