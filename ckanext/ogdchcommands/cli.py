@@ -268,15 +268,21 @@ def cleanup_extras(key, dryrun):
 
 
 @ogdch.command("cleanup_harvestjobs")
-@click.argument("source_id", metavar="HARVEST_SOURCE_ID", required=False)
-@click.argument("nr_of_jobs_to_keep", metavar="NR_OF_JOBS_TO_KEEP", required=False)
+@click.argument("source_id", metavar="SOURCE_ID", required=False)
+@click.option(
+    "--keep",
+    "nr_of_jobs_to_keep",
+    default=10,
+    required=False,
+    help="The number of most recent harvest jobs to keep",
+)
 @click.option(
     "--dryrun",
     is_flag=True,
     required=False,
     help="See what would happen on running this command without making any real changes",
 )
-def cleanup_harvestjobs(nr_of_jobs_to_keep=10, dryrun=False, source_id=None):
+def cleanup_harvestjobs(nr_of_jobs_to_keep, dryrun, source_id=None):
     """Clean up harvester jobs and objects.
 
     Deletes all the harvest jobs and objects except the latest n.
@@ -312,10 +318,13 @@ def cleanup_harvestjobs(nr_of_jobs_to_keep=10, dryrun=False, source_id=None):
 
 
 @ogdch.command("clear_stale_harvestsources")
-@click.argument(
+@click.option(
+    "--keep_harvestsource_days",
     "timeframe_to_keep_harvested_datasets",
-    metavar="DAYS_TO_KEEP_DATASETS",
+    type=int,
+    default=30,
     required=False,
+    help="The number of days back to keep harvested datasets, jobs and objects",
 )
 def clear_stale_harvestsources(timeframe_to_keep_harvested_datasets):
     """Clean up harvest sources.
