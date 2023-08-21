@@ -226,11 +226,9 @@ def cleanup_resources(dryrun):
     else:
         print(
             msg_resource_cleanup.format(
-                result.get(
-                    "count_deleted",
-                    result.get("count_filestores"),
-                    result.get("filepaths"),
-                )
+                result.get("count_deleted"),
+                result.get("count_filestores"),
+                result.get("filepaths"),
             )
         )
 
