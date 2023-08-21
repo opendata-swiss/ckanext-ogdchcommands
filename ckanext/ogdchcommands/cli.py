@@ -54,7 +54,7 @@ def ogdch():
     pass
 
 
-@ogdch.command()
+@ogdch.command("publish_scheduled_datasets")
 @click.option(
     "--dryrun",
     is_flag=True,
@@ -115,7 +115,7 @@ def publish_scheduled_datasets(dryrun):
         )
 
 
-@ogdch.command()
+@ogdch.command("cleanup_datastore")
 def cleanup_datastore():
     """Clean up datastore."""
     user = logic.get_action("get_site_user")({"ignore_auth": True}, {})
@@ -155,7 +155,7 @@ def cleanup_datastore():
     print("Deleted content of %s tables" % delete_count)
 
 
-@ogdch.command()
+@ogdch.command("cleanup_filestore")
 @click.option(
     "--dryrun",
     is_flag=True,
@@ -189,7 +189,7 @@ def cleanup_filestore(dryrun):
         )
 
 
-@ogdch.command()
+@ogdch.command("cleanup_resources")
 @click.option(
     "--dryrun",
     is_flag=True,
@@ -233,7 +233,7 @@ def cleanup_resources(dryrun):
         )
 
 
-@ogdch.command()
+@ogdch.command("cleanup_extras")
 @click.argument("key", metavar="KEY", required=True)
 @click.option(
     "--dryrun",
@@ -267,7 +267,7 @@ def cleanup_extras(key, dryrun):
         print(msg_package_extra_cleanup.format(result.get("count_deleted"), key))
 
 
-@ogdch.command()
+@ogdch.command("cleanup_harvestjobs")
 @click.argument("source_id", metavar="HARVEST_SOURCE_ID", required=False)
 @click.argument("nr_of_jobs_to_keep", metavar="NR_OF_JOBS_TO_KEEP", required=False)
 @click.option(
@@ -311,7 +311,7 @@ def cleanup_harvestjobs(nr_of_jobs_to_keep=10, dryrun=False, source_id=None):
     _print_clean_harvestjobs_result(result, data_dict)
 
 
-@ogdch.command()
+@ogdch.command("clear_stale_harvestsources")
 @click.argument(
     "timeframe_to_keep_harvested_datasets",
     metavar="DAYS_TO_KEEP_DATASETS",
