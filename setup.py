@@ -54,8 +54,5 @@ setup(
     [ckan.plugins]
         ogdch_cmd=ckanext.ogdchcommands.plugin:OgdchCommandsPlugin
         ogdch_admin=ckanext.ogdchcommands.plugin:OgdchAdminPlugin
-        
-    [paste.paster_command]
-        ogdch=ckanext.ogdchcommands.commands:OgdchCommands
     '''
 )

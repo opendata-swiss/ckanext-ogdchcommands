@@ -219,6 +219,7 @@ def ogdch_cleanup_filestore(context, data_dict):
     dryrun = data_dict.get('dryrun')
     filepaths = []
     errors = []
+    storage_path = '/srv/app/src_extension/storage_sim'
 
     for subdir, dirs, files in os.walk(storage_path):
         for file in files:
