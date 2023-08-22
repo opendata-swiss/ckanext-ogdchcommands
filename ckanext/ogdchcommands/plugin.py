@@ -1,18 +1,17 @@
 # coding=UTF-8
 
-import ckan.plugins as plugins
-import os
 import logging
-import ckanext.ogdchcommands.logic as l
+import os
+
+import ckan.plugins as plugins
+
 import ckanext.ogdchcommands.admin_logic as admin
+import ckanext.ogdchcommands.logic as l
 from ckanext.ogdchcommands.cli import get_commands
 
 log = logging.getLogger(__name__)
 
-__location__ = os.path.realpath(os.path.join(
-    os.getcwd(),
-    os.path.dirname(__file__))
-)
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
 class OgdchCommandsPlugin(plugins.SingletonPlugin):
@@ -25,21 +24,22 @@ class OgdchCommandsPlugin(plugins.SingletonPlugin):
     # Allow adding of actions to the logic layer
 
     def get_actions(self):
-        '''
+        """
         Actions that are used by the commands.
-        '''
+        """
         return {
-            'ogdch_cleanup_harvestjobs': l.ogdch_cleanup_harvestjobs,
-            'ogdch_cleanup_resources': l.ogdch_cleanup_resources,
-            'ogdch_cleanup_filestore': l.ogdch_cleanup_filestore,
-            'cleanup_package_extra': l.cleanup_package_extra,
-            'ogdch_cleanup_harvestsource': l.ogdch_cleanup_harvestsource,
+            "ogdch_cleanup_harvestjobs": l.ogdch_cleanup_harvestjobs,
+            "ogdch_cleanup_resources": l.ogdch_cleanup_resources,
+            "ogdch_cleanup_filestore": l.ogdch_cleanup_filestore,
+            "cleanup_package_extra": l.cleanup_package_extra,
+            "ogdch_cleanup_harvestsource": l.ogdch_cleanup_harvestsource,
         }
 
     # IClick
 
     def get_commands(self):
         return get_commands()
+
 
 class OgdchAdminPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IActions)
@@ -50,12 +50,12 @@ class OgdchAdminPlugin(plugins.SingletonPlugin):
     # Allow adding of actions to the logic layer
 
     def get_actions(self):
-        '''
+        """
         Actions that are used by the commands.
-        '''
+        """
         return {
-            'ogdch_reindex': admin.ogdch_reindex,
-            'ogdch_check_indexing': admin.ogdch_check_indexing,
-            'ogdch_check_field': admin.ogdch_check_field,
-            'ogdch_latest_dataset_activities': admin.ogdch_latest_dataset_activities, # noqa
+            "ogdch_reindex": admin.ogdch_reindex,
+            "ogdch_check_indexing": admin.ogdch_check_indexing,
+            "ogdch_check_field": admin.ogdch_check_field,
+            "ogdch_latest_dataset_activities": admin.ogdch_latest_dataset_activities,
         }
