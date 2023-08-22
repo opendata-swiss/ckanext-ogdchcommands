@@ -29,7 +29,7 @@ paster --plugin=ckanext-ogdchcommands ogdch cleanup_datastore -c /var/www/ckan/d
 When datasets are harvested, we try to reuse the existing resources, but not all of them are 
 reused. Some old resources remain with the state 'deleted'. These orphaned resources can be
 deleted with this command. It is meant to be run regularly by a cronjob. 
-It will also deleted all files from the filestore that are associated with the orphaned resources.
+It will also delete all files from the filestore that are associated with the orphaned resources.
 It also comes with a dryrun option.
 
 ```bash
