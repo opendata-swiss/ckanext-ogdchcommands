@@ -208,8 +208,9 @@ def ogdch_cleanup_resources(context, data_dict):
     }
 
 def get_resource_id(filepath):
-    # filepath:    bfb/f4c/75-1efd-474c-a347-6b2690e6344b
+    # filepath:    resources/bfb/f4c/75-1efd-474c-a347-6b2690e6344b
     # resource id: bfbf4c75-1efd-474c-a347-6b2690e6344b
+    filepath = re.sub(r'resources', '', filepath)
     return re.sub(r'\/', '', filepath)
 
 def ogdch_cleanup_filestore(context, data_dict):
