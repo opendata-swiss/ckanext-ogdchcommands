@@ -6,7 +6,7 @@ import os
 import ckan.plugins as plugins
 
 import ckanext.ogdchcommands.admin_logic as admin
-import ckanext.ogdchcommands.logic as l
+import ckanext.ogdchcommands.logic as logic
 from ckanext.ogdchcommands.cli import get_commands
 
 log = logging.getLogger(__name__)
@@ -28,11 +28,11 @@ class OgdchCommandsPlugin(plugins.SingletonPlugin):
         Actions that are used by the commands.
         """
         return {
-            "ogdch_cleanup_harvestjobs": l.ogdch_cleanup_harvestjobs,
-            "ogdch_cleanup_resources": l.ogdch_cleanup_resources,
-            "ogdch_cleanup_filestore": l.ogdch_cleanup_filestore,
-            "cleanup_package_extra": l.cleanup_package_extra,
-            "ogdch_cleanup_harvestsource": l.ogdch_cleanup_harvestsource,
+            "ogdch_cleanup_harvestjobs": logic.ogdch_cleanup_harvestjobs,
+            "ogdch_cleanup_resources": logic.ogdch_cleanup_resources,
+            "ogdch_cleanup_filestore": logic.ogdch_cleanup_filestore,
+            "cleanup_package_extra": logic.cleanup_package_extra,
+            "ogdch_cleanup_harvestsource": logic.ogdch_cleanup_harvestsource,
         }
 
     # IClick
