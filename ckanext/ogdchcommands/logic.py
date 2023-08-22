@@ -208,9 +208,8 @@ def ogdch_cleanup_resources(context, data_dict):
     }
 
 def get_resource_id(filepath):
-    # filepath:    resources/bfb/f4c/75-1efd-474c-a347-6b2690e6344b
+    # filepath:    bfb/f4c/75-1efd-474c-a347-6b2690e6344b
     # resource id: bfbf4c75-1efd-474c-a347-6b2690e6344b
-    filepath = re.sub(r'resources', '', filepath)
     return re.sub(r'\/', '', filepath)
 
 def ogdch_cleanup_filestore(context, data_dict):
@@ -218,13 +217,14 @@ def ogdch_cleanup_filestore(context, data_dict):
     cleans up the filestore files that are no longer associated to any resources.
     """
     dryrun = data_dict.get('dryrun')
+    resource_path = storage_path + "/resources/"
     filepaths = []
     errors = []
 
-    for subdir, dirs, files in os.walk(storage_path):
+    for subdir, dirs, files in os.walk(resource_path):
         for file in files:
             fullpath = os.path.join(subdir, file)
-            relpath = os.path.relpath(fullpath, storage_path)
+            relpath = os.path.relpath(fullpath, resource_path)
             resource_id = get_resource_id(relpath)
 
             tk.check_access('resource_show', context, {'id': resource_id})
