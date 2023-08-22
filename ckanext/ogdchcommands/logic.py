@@ -201,7 +201,6 @@ def ogdch_cleanup_resources(context, data_dict):
     filepaths = []
     # check the FileStore for artifacts of that resource
     for id in delete_resources_ids:
-        directory = get_directory(id)
         filepath = get_path(id)
         if os.path.exists(filepath):
             filepaths.append(str(filepath))
