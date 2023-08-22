@@ -3,6 +3,7 @@
 import json
 import logging
 import traceback
+from json import JSONDecodeError
 
 import ckan.model as model
 import ckan.plugins.toolkit as tk
@@ -73,7 +74,7 @@ def ogdch_check_field(context, data_dict):
         if field_data_raw:
             try:
                 field_data = json.loads(field_data_raw)
-            except:
+            except (JSONDecodeError, TypeError):
                 pass
         result = {
             "name": package.get("name"),
