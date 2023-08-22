@@ -73,7 +73,7 @@ def publish_scheduled_datasets(dryrun):
     try:
         logic.check_access("package_patch", context)
     except logic.NotAuthorized:
-        print("User is not authorized to perform this action.")
+        click.echo("User is not authorized to perform this action.")
         sys.exit(1)
 
     query = logic.get_action("package_search")(
@@ -100,18 +100,17 @@ def publish_scheduled_datasets(dryrun):
             else:
                 log_output += "is due to be published.\n"
 
-    print(log_output)
+    click.echo(log_output)
 
     if dryrun:
-        print(
-            "\nThis has been a dry run: "
-            "if you want to perfom these changes"
-            " run this again without the option --dryrun!"
+        click.echo(
+            "\nThis has been a dry run: if you want to perfom these changes, "
+            "run this again without the option --dryrun!"
         )
     else:
-        print(
-            "\nPrivate datasets that are due have been published. "
-            "See output above about what has been done."
+        click.echo(
+            "\nPrivate datasets that are due have been published. See output "
+            "above about what has been done."
         )
 
 
@@ -124,20 +123,20 @@ def cleanup_datastore():
         logic.check_access("datastore_delete", context)
         logic.check_access("resource_show", context)
     except logic.NotAuthorized:
-        print("User is not authorized to perform this action.")
+        click.echo("User is not authorized to perform this action.")
         sys.exit(1)
 
     # query datastore to get all resources from the _table_metadata
     resource_id_list = []
     try:
         for offset in itertools.count(start=0, step=100):
-            print("Load metadata records from datastore (offset: %s)" % offset)
+            click.echo("Load metadata records from datastore (offset: %s)" % offset)
             record_list, has_next_page = _get_datastore_table_page(context, offset)
             resource_id_list.extend(record_list)
             if not has_next_page:
                 break
     except Exception as e:
-        print(
+        click.echo(
             "Error while gathering resources: %s / %s"
             % (str(e), traceback.format_exc())
         )
@@ -149,10 +148,10 @@ def cleanup_datastore():
         logic.get_action("datastore_delete")(
             context, {"resource_id": resource_id, "force": True}
         )
-        print("Table '%s' deleted (not dropped)" % resource_id)
+        click.echo("Table '%s' deleted (not dropped)" % resource_id)
         delete_count += 1
 
-    print("Deleted content of %s tables" % delete_count)
+    click.echo("Deleted content of %s tables" % delete_count)
 
 
 @ogdch.command("cleanup_filestore")
@@ -176,13 +175,13 @@ def cleanup_filestore(dryrun):
         },
     )
     if dryrun:
-        print(
+        click.echo(
             msg_filestore_cleanup_dryrun.format(
                 result.get("file_count"), result.get("filepaths"), result.get("errors")
             )
         )
     else:
-        print(
+        click.echo(
             msg_filestore_cleanup.format(
                 result.get("file_count"), result.get("filepaths"), result.get("errors")
             )
@@ -207,7 +206,7 @@ def cleanup_resources(dryrun):
     try:
         logic.check_access("resource_delete", context)
     except logic.NotAuthorized:
-        print("User is not authorized to perform this action.")
+        click.echo("User is not authorized to perform this action.")
         sys.exit(1)
     result = logic.get_action("ogdch_cleanup_resources")(
         context,
@@ -216,7 +215,7 @@ def cleanup_resources(dryrun):
         },
     )
     if dryrun:
-        print(
+        click.echo(
             msg_resource_cleanup_dryrun.format(
                 result.get("count_deleted"),
                 result.get("count_filestores"),
@@ -224,7 +223,7 @@ def cleanup_resources(dryrun):
             )
         )
     else:
-        print(
+        click.echo(
             msg_resource_cleanup.format(
                 result.get("count_deleted"),
                 result.get("count_filestores"),
@@ -249,22 +248,24 @@ def cleanup_extras(key, dryrun):
     can then be deleted by running this command for the key.
     """
     if not key:
-        print("Please provide a key for which extras should be cleaned.")
+        click.echo("Please provide a key for which extras should be cleaned.")
         sys.exit(1)
     user = logic.get_action("get_site_user")({"ignore_auth": True}, {})
     context = {"model": model, "session": model.Session, "user": user["name"]}
     try:
         logic.check_access("package_delete", context)
     except logic.NotAuthorized:
-        print("User is not authorized to perform this action.")
+        click.echo("User is not authorized to perform this action.")
         sys.exit(1)
     result = logic.get_action("cleanup_package_extra")(
         context, {"dryrun": dryrun, "key": key}
     )
     if dryrun:
-        print(msg_package_extra_cleanup_dryrun.format(result.get("count_deleted"), key))
+        click.echo(
+            msg_package_extra_cleanup_dryrun.format(result.get("count_deleted"), key)
+        )
     else:
-        print(msg_package_extra_cleanup.format(result.get("count_deleted"), key))
+        click.echo(msg_package_extra_cleanup.format(result.get("count_deleted"), key))
 
 
 @ogdch.command("cleanup_harvestjobs")
@@ -294,9 +295,9 @@ def cleanup_harvestjobs(nr_of_jobs_to_keep, dryrun, source_id=None):
     }
     if source_id:
         data_dict["harvest_source_id"] = source_id
-        print("cleaning up jobs for harvest source {}".format(source_id))
+        click.echo("Cleaning up jobs for harvest source {}".format(source_id))
     else:
-        print("cleaning up jobs for all harvest sources")
+        click.echo("Cleaning up jobs for all harvest sources")
 
     # set context
     context = {"model": model, "session": model.Session, "ignore_auth": True}
@@ -307,7 +308,7 @@ def cleanup_harvestjobs(nr_of_jobs_to_keep, dryrun, source_id=None):
     try:
         logic.check_access("harvest_sources_clear", context, data_dict)
     except logic.NotAuthorized:
-        print("User is not authorized to perform this action.")
+        click.echo("User is not authorized to perform this action.")
         sys.exit(1)
 
     # perform the harvest job cleanup
@@ -347,9 +348,9 @@ def clear_stale_harvestsources(timeframe_to_keep_harvested_datasets):
     # test authorization
     try:
         logic.check_access("harvest_sources_clear", context, data_dict)
-        print("User is authorized to perform this action")
+        click.echo("User is authorized to perform this action")
     except logic.NotAuthorized:
-        print("User is not authorized to perform this action")
+        click.echo("User is not authorized to perform this action")
         sys.exit(1)
 
     # cleanup harvest source
@@ -357,7 +358,7 @@ def clear_stale_harvestsources(timeframe_to_keep_harvested_datasets):
         context,
         {"timeframe_to_keep_harvested_datasets": timeframe_to_keep_harvested_datasets},
     )
-    print(
+    click.echo(
         "{} harvest sources were cleared".format(
             nr_cleanup_harvesters["count_cleared_harvestsource"]
         )
@@ -387,14 +388,14 @@ def _get_datastore_table_page(context, offset=0):
 
             logic.check_access("resource_show", context)
             logic.get_action("resource_show")(context, {"id": record["name"]})
-            print("Resource '%s' found" % record["name"])
+            click.echo("Resource '%s' found" % record["name"])
         except logic.NotFound:
             resource_id_list.append(record["name"])
-            print("Resource '%s' *not* found" % record["name"])
+            click.echo("Resource '%s' *not* found" % record["name"])
         except logic.NotAuthorized:
-            print("User is not authorized to perform this action.")
+            click.echo("User is not authorized to perform this action.")
         except (KeyError, AttributeError) as e:
-            print("Error while handling record %s: %s" % (record, str(e)))
+            click.echo("Error while handling record %s: %s" % (record, str(e)))
             continue
 
     # are there more records?
@@ -404,58 +405,56 @@ def _get_datastore_table_page(context, offset=0):
 
 
 def _print_clean_harvestjobs_result(result, data_dict):
-    print(
+    click.echo(
         "\nCleaning up jobs for harvest sources:\n{}\nConfiguration:".format(37 * "-")
     )
     _print_configuration(data_dict)
-    print("\nResults per source:\n{}".format(19 * "-"))
+    click.echo("\nResults per source:\n{}".format(19 * "-"))
     for source in result["sources"]:
         if source.id in result["cleanup"].keys():
             _print_harvest_source(source)
             _print_cleanup_result_per_source(result["cleanup"][source.id])
         else:
             _print_harvest_source(source)
-            print("Nothing needs to be done for this source")
+            click.echo("Nothing needs to be done for this source")
 
     if data_dict["dryrun"]:
-        print(
-            "\nThis has been a dry run: "
-            "if you want to perfom these changes"
-            " run this again without the option --dryrun!"
+        click.echo(
+            "This has been a dry run: if you want to perfom these changes, run "
+            "this again without the option --dryrun!"
         )
     else:
-        print(
-            "\nThe database has been cleaned from harvester "
-            "jobs and harvester objects."
-            " See above about what has been done."
+        click.echo(
+            "\nThe database has been cleaned from harvester jobs and harvester "
+            "objects. See above about what has been done."
         )
 
 
 def _print_harvest_source(source):
-    print("\n           Source id: {0}".format(source.id))
-    print("                 url: {0}".format(source.url))
-    print("                type: {0}".format(source.type))
+    click.echo("\n           Source id: {0}".format(source.id))
+    click.echo("                 url: {0}".format(source.url))
+    click.echo("                type: {0}".format(source.type))
 
 
 def _print_cleanup_result_per_source(cleanup_result):
-    print("   nr jobs to delete: {0}".format(len(cleanup_result["deleted_jobs"])))
-    print("nr objects to delete: {0}".format(cleanup_result["deleted_nr_objects"]))
-    print("      jobs to delete:")
+    click.echo("   nr jobs to delete: {0}".format(len(cleanup_result["deleted_jobs"])))
+    click.echo("nr objects to delete: {0}".format(cleanup_result["deleted_nr_objects"]))
+    click.echo("      jobs to delete:")
     _print_harvest_jobs(cleanup_result["deleted_jobs"])
 
 
 def _print_configuration(data_dict):
     for k, v in data_dict.items():
-        print("- {}: {}".format(k, v))
+        click.echo("- {}: {}".format(k, v))
 
 
 def _print_harvest_jobs(jobs):
     header_list = ["id", "created", "status"]
     row_format = "{:<20}|{:<40}|{:<20}|{:<20}"
-    print(row_format.format("", *header_list))
-    print("{:<20}+{:<40}+{:<20}+{:<20}".format("", "-" * 40, "-" * 20, "-" * 20))
+    click.echo(row_format.format("", *header_list))
+    click.echo("{:<20}+{:<40}+{:<20}+{:<20}".format("", "-" * 40, "-" * 20, "-" * 20))
     for job in jobs:
-        print(
+        click.echo(
             row_format.format(
                 "", job.id, job.created.strftime("%Y-%m-%d %H:%M:%S"), job.status
             )
