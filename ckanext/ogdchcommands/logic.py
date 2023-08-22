@@ -148,7 +148,7 @@ def get_path(id):
     filepath = os.path.join(directory, id[6:])
 
     if filepath != os.path.realpath(filepath):
-        raise logic.ValidationError({"upload": ["Invalid storage path"]})
+        raise ValidationError({"upload": ["Invalid storage path"]})
 
     return filepath
 
@@ -160,7 +160,7 @@ def get_directory(id):
     real_storage = os.path.realpath(storage_path)
     directory = os.path.join(real_storage, id[0:3], id[3:6])
     if directory != os.path.realpath(directory):
-        raise logic.ValidationError({"upload": ["Invalid storage directory"]})
+        raise ValidationError({"upload": ["Invalid storage directory"]})
     return directory
 
 
