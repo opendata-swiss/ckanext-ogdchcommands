@@ -9,7 +9,7 @@ jobs:
         with:
           python-version: '3.10'
       - name: Install requirements
-        run: pip install -r $GITHUB_WORKSPACE/ckanext-ogdchcommands/dev-requirements.txt
+        run: pip install -r $GITHUB_WORKSPACE/dev-requirements.txt
       - name: Check syntax
         run: |
           isort --diff --check ckanext/
