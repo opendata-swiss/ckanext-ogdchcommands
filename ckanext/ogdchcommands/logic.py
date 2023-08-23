@@ -135,10 +135,6 @@ def ogdch_cleanup_harvestjobs(context, data_dict):
                 "deleted_nr_objects": len(delete_objects_ids),
             }
 
-            log.info(
-                "cleaned resource and shacl result directories {}".format(source.id)
-            )
-
     # return result of action
     return {"sources": sources_to_cleanup, "cleanup": cleanup_result}
 
