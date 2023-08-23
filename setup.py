@@ -33,7 +33,7 @@ setup(
         "Programming Language :: Python :: 2.7",
     ],
     # What does your project relate to?
-    keywords="""CKAN commands harvest shacl validation""",
+    keywords="""CKAN commands harvest cleanup datastore""",
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=["contrib", "docs", "tests*"]),
