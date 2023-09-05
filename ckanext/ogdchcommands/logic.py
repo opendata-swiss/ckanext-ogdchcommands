@@ -230,6 +230,7 @@ def ogdch_cleanup_filestore(context, data_dict):
     cleans up the filestore files that are no longer associated to any resources.
     """
     dryrun = data_dict.get("dryrun")
+    resource_path = storage_path + "/resources/"
     filepaths = []
     errors = []
 
