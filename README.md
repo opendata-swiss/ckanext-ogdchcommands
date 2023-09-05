@@ -41,7 +41,17 @@ It also comes with a dryrun option.
 ckan -c /var/www/ckan/development.ini ogdch cleanup_resources
 ```
 
-## Command to clean up the package extra table.
+### Command to cleanup resource-files from the filestore.
+When a resource gets deleted will be marked as deleted in the database and also its associated file in the CKAN-FileStore won't be deleted.
+This command finds these orphaned files by checking whether their corresponding resource still exists.
+It is meant to be run regularly by a cronjob.
+It also comes with a dryrun option.
+
+```bash
+paster --plugin=ckanext-ogdchcommands ogdch cleanup_filestore -c /var/www/ckan/development.ini
+```
+
+## Command to cleanup the package extra table.
 When a key is no longer needed in the package_extra table, since it is no longer part of the dataset,
 then after the data have been migrated that old key can be removed from the package_extra table 
 and from the dependent table package_extra_revision.

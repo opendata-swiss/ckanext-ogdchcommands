@@ -233,10 +233,10 @@ def ogdch_cleanup_filestore(context, data_dict):
     filepaths = []
     errors = []
 
-    for subdir, dirs, files in os.walk(storage_path):
+    for subdir, dirs, files in os.walk(resource_path):
         for file in files:
             fullpath = os.path.join(subdir, file)
-            relpath = os.path.relpath(fullpath, storage_path)
+            relpath = os.path.relpath(fullpath, resource_path)
             resource_id = get_resource_id(relpath)
 
             tk.check_access("resource_show", context, {"id": resource_id})
