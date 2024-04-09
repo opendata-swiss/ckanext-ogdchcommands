@@ -201,7 +201,7 @@ class OgdchCommands(ckan.lib.cli.CkanCommand):
     def _is_dataset_due_to_be_published(context, dataset):
         issued_datetime = datetime.strptime(
             dataset.get('scheduled'),
-            '%d.%m.%Y'
+            "%Y-%m-%dT%H:%M:%S"
         )
         if issued_datetime.date() <= datetime.today().date():
             return logic.get_action('package_show')(context, {
