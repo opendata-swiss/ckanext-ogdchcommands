@@ -20,11 +20,11 @@ RESULT_IDENTIFIER = "result"
 
 
 def ogdch_cleanup_harvestjobs(context, data_dict):
-    """
-    cleans up the database for harvest objects and related tables for all
-    harvesting jobs except the latest
-    'ckanext.switzerland.number_harvest_jobs_per_source' is the corresponding
-    configuration parameter on how many jobs to keep per source
+    """Clean up the database for harvest objects and related tables for all
+    harvesting jobs except the most recent ones.
+
+    The number of jobs to keep must be specified as `number_of_jobs_to_keep` in the
+    data_dict.
     The command can be called with or without a source. In the later case all
     sources are cleaned.
     """
