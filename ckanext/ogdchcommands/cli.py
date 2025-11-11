@@ -366,7 +366,7 @@ def clear_stale_harvestsources(timeframe_to_keep_harvested_datasets):
 
 
 def _is_dataset_due_to_be_published(context, dataset):
-    issued_datetime = datetime.strptime(dataset.get("scheduled"), "%d.%m.%Y")
+    issued_datetime = datetime.fromisoformat(dataset.get("scheduled"))
     if issued_datetime.date() <= datetime.today().date():
         return logic.get_action("package_show")(context, {"id": dataset.get("id")})
     else:
