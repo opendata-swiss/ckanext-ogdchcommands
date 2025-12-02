@@ -60,7 +60,7 @@ and from the dependent table package_extra_revision.
 The command comes with a dryrun option.
 
 ```bash
-ckan -c /var/www/ckan/development.ini ogdch cleanup_extras publishers --dryrun
+ckan ogdch cleanup_extras publishers --dryrun
 ```
 
 ### Command to clean up the harvest jobs
@@ -72,7 +72,7 @@ It has a dryrun option so that it can be tested what will get be deleted in the 
 changes are performed.
 
 ```bash
-ckan -c /var/www/ckan/development.ini ogdch cleanup_harvestjobs [{source_id}] [--keep={n}}] [--dryrun]
+ckan ogdch cleanup_harvestjobs [{source_id}] [--keep={n}}] [--dryrun]
 ```
 
 ### Command to publish private datasets that have a scheduled date
@@ -122,7 +122,9 @@ To install ckanext-ogdchcommands:
 
 2. Install the ckanext-ogdchcommands Python package into your virtual environment:
 
-     pip install ckanext-ogdchcommands
+     git clone https://github.com/opendata-swiss/ckanext-ogdchcommands.git
+     cd ckanext-ogdchcommands
+     pip install .
 
 3. Add ``ogdch_cmd`` to the ``ckan.plugins`` setting in your CKAN
    config file (by default the config file is located at
@@ -140,8 +142,6 @@ To install ckanext-ogdchcommands:
 To install ckanext-ogdchcommands for development, activate your CKAN virtualenv and
 do:
 
-    git clone https://github.com/ogdch/ogdchcommands.git
+    git clone https://github.com/opendata-swiss/ckanext-ogdchcommands.git
     cd ckanext-ogdchcommands
-    python setup.py develop
-    pip install -r dev-requirements.txt
-    pip install -r requirements.txt
+    pip install .[dev]
