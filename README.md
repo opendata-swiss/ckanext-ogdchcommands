@@ -11,7 +11,6 @@ CKAN extension for DCAT-AP Switzerland. This extension provides two CKAN plugins
 - CKAN 2.10+
 - ckanext-switzerland-ng
 - ckanext-harvest
-- ckanext-datastore
 
 ## `ogdch_cmd` Commands
 
