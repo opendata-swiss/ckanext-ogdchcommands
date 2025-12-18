@@ -1,0 +1,64 @@
+publiccodeYmlVersion: 0.5.0
+name: ckanext-ogdchcommands
+url: https://github.com/opendata-swiss/ckanext-ogdchcommands
+releaseDate: 2016-06-01
+logo: https://opendata.swiss/images/logo_horizontal.png
+platforms:
+  - web
+categories:
+  - data-collection
+organisation:
+  uri: https://opendata.swiss
+usedBy:
+  - Swiss Federal Statistical Office
+developmentStatus: stable
+softwareType: addon
+dependsOn:
+  open:
+    - name: CKAN
+      versionMin: "2.11"
+    - name: ckanext-switzerland-ng
+      versionMin: "1.0.0"
+    - name: ckanext-harvest
+      versionMin: "1.6.2"
+description:
+  en:
+    localisedName: ckanext-ogdchcommands
+    shortDescription: Extension implementing various tools for maintaining a CKAN-instance.
+    longDescription: ckanext-ogdchcommands is a plugin/extension for [CKAN](https://ckan.org/) that provides a 
+      collection of maintenance and operational command-line utilities for managing CKAN instances. It supports tasks
+      such as cleaning up obsolete harvest jobs and sources, publishing scheduled datasets, removing stale or unused
+      files and metadata, inspecting recent dataset activity, and verifying dataset indexing. The extension is
+      intended to support stable operation, data quality and ongoing maintenance of CKAN-based open data platforms.
+      Most commands have a dryrun-option for safe execution. Executing those jobs on a regular basis, according to the
+      needs of the portal, can improve reliability and efficient operation.
+    features:
+      - cleanup datastore entries for resources that no longer exist
+      - cleanup resources that are marked as 'deleted'
+      - cleanup filestore entries for resources that no longer exist
+      - remove obsolete dataset metadata keys from package_extra and package_extra_revision e.g. after migrations
+      - clean up harvest jobs and harvest objects by retaining only the most recent runs (optionally per source)
+      - publish scheduled datasets
+      - remove datasets, jobs and objects for harvest sources that have been inactive beyond a configurable threshold
+      - check for datasets in CKAN that are not indexed in SOLR
+      - reindex the SOLR search index, optionally targeting a specific dataset or only datasets missing from the index
+      - inspect a specific metadata field across datasets and report its values together with the corresponding dataset names
+      - display recent dataset activity, including user, dataset name and related change messages when available
+legal:
+  license: AGPL-3.0-or-later
+maintenance:
+  type: contract
+  contractors:
+    - name: Liip AG
+      until: 2030-12-01
+      email: opendata@liip.ch
+      website: https://www.liip.ch/
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - en
+intendedAudience:
+  scope:
+    - government
+    - local-authorities
+    - research
