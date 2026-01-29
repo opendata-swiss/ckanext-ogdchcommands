@@ -183,9 +183,7 @@ def ogdch_cleanup_resources(context, data_dict):
     delete from resource
     where id in ('{delete_id_values}');
     commit;
-    """.format(
-        delete_id_values="','".join(delete_resources_ids)
-    )
+    """.format(delete_id_values="','".join(delete_resources_ids))
 
     if not dryrun:
         model.Session.execute(sql)
@@ -293,9 +291,7 @@ def cleanup_package_extra(context, data_dict):
     delete from package_extra
     where id in  ('{delete_id_values}');
     commit;
-    """.format(
-        delete_id_values="','".join(delete_package_extra_ids)
-    )
+    """.format(delete_id_values="','".join(delete_package_extra_ids))
 
     if not dryrun:
         model.Session.execute(sql)
