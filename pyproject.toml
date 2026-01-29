@@ -1,0 +1,48 @@
+[project]
+name = "ckanext-ogdchcommands"
+version = "0.0.1"
+dynamic = ["dependencies", "optional-dependencies"]
+description = "Commands for opendata.swiss"
+authors = [
+    {name = "Liip AG", email = "ogdch@liip.ch"}
+]
+maintainers = [
+    {name = "Liip AG", email = "ogdch@liip.ch"}
+]
+license = {text = "AGPL"}
+classifiers = [
+    "Intended Audience :: Developers",
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+keywords = [
+    "CKAN",
+    "commands",
+    "harvest",
+    "cleanup",
+    "datastore",
+]
+
+[project.urls]
+Documentation = "https://github.com/opendata-swiss/ckanext-ogdchcommands"
+Repository = "https://github.com/opendata-swiss/ckanext-ogdchcommands"
+Issues = "https://github.com/opendata-swiss/ckanext-ogdchcommands/issues"
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+optional-dependencies = {dev = { file = ["dev-requirements.txt"] }}
+
+[tool.isort]
+profile = "black"
+
+[project.entry-points."ckan.plugins"]
+ogdch_cmd = "ckanext.ogdchcommands.plugin:OgdchCommandsPlugin"
+ogdch_admin = "ckanext.ogdchcommands.plugin:OgdchAdminPlugin"

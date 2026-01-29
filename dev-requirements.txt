@@ -1,3 +1,5 @@
-# This file lists the dependencies of this extension.
-# Install with a command like: pip install -r requirements.txt 
-flake8==3.0.4
+# This file lists the development dependencies of this extension.
+# Install with a command like: pip install -r dev-requirements.txt
+black>=25.1.0
+flake8>=5.0.0
+isort>=6.0.1
