@@ -397,7 +397,9 @@ def _get_datastore_table_page(context, offset=0):
             click.echo("Resource '%s' *not* found" % record["name"])
         except logic.NotAuthorized:
             click.echo("User is not authorized to perform this action.")
-        except (KeyError, AttributeError) as e:
+        # Temporary workaround to enable cleaning up the datastore despite
+        # a dataset that causes a validation error on serialising to dict
+        except Exception as e:
             click.echo("Error while handling record %s: %s" % (record, str(e)))
             continue
 
